@@ -153,7 +153,14 @@ deno task compile
 
 ## License
 
-MIT
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+
+This means:
+- You can use, modify, and distribute gwt freely
+- If you modify gwt and make it available over a network (including as a service), you must make your source code available under AGPL-3.0
+- Any derivative works must also be licensed under AGPL-3.0
+
+See the [LICENSE](LICENSE) file for the full license text
 
 ## Contributing
 
