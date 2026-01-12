@@ -42,7 +42,7 @@ export async function listBranches(): Promise<BranchList> {
       ...stdout
         .trim()
         .split('\n')
-        .filter((line) => line.length > 0)
+        .filter((line) => line.length > 0),
     );
   }
 
@@ -64,7 +64,7 @@ export async function listBranches(): Promise<BranchList> {
         .split('\n')
         .filter((line) => line.length > 0)
         // Filter out HEAD references like "origin/HEAD -> origin/main"
-        .filter((line) => !line.includes('HEAD'))
+        .filter((line) => !line.includes('HEAD')),
     );
   }
 

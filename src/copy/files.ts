@@ -31,7 +31,7 @@ import { copy, exists, expandGlob } from '@std/fs';
 export async function copyFiles(
   fromPath: string,
   toPath: string,
-  fileList: string[]
+  fileList: string[],
 ): Promise<void> {
   for (const item of fileList) {
     // Check if it's a glob pattern
@@ -49,7 +49,7 @@ export async function copyFiles(
 async function copySingleItem(
   fromPath: string,
   toPath: string,
-  name: string
+  name: string,
 ): Promise<void> {
   const sourcePath = join(fromPath, name);
   const destPath = join(toPath, name);
@@ -74,13 +74,15 @@ async function copySingleItem(
 async function copyGlobPattern(
   fromPath: string,
   toPath: string,
-  pattern: string
+  pattern: string,
 ): Promise<void> {
   try {
-    for await (const entry of expandGlob(pattern, {
-      root: fromPath,
-      globstar: false, // Only match at current level
-    })) {
+    for await (
+      const entry of expandGlob(pattern, {
+        root: fromPath,
+        globstar: false, // Only match at current level
+      })
+    ) {
       // Get the relative name from the source path
       const name = entry.name;
       const destPath = join(toPath, name);

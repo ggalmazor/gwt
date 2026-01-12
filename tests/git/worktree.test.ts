@@ -1,6 +1,6 @@
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
-import { listWorktrees, addWorktree, removeWorktree } from '../../src/git/worktree.ts';
+import { addWorktree, listWorktrees, removeWorktree } from '../../src/git/worktree.ts';
 
 Deno.test('listWorktrees returns main worktree when no additional worktrees exist', async () => {
   const tempRepo = await createTempGitRepo();

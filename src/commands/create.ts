@@ -16,10 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Select, Input } from '@cliffy/prompt';
+import { Input, Select } from '@cliffy/prompt';
 import { basename, join } from '@std/path';
 import { exists } from '@std/fs';
-import { isGitRepo, getRepoRoot } from '../git/repo.ts';
+import { getRepoRoot, isGitRepo } from '../git/repo.ts';
 import { listBranches } from '../git/branch.ts';
 import { addWorktree } from '../git/worktree.ts';
 import { loadConfig } from '../config/manager.ts';

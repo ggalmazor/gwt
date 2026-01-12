@@ -43,7 +43,7 @@ export async function listCommand(): Promise<void> {
         wt.path,
         wt.branch,
         wt.commit.substring(0, 7), // Short commit hash
-      ])
+      ]),
     )
     .border();
 

@@ -106,5 +106,5 @@ export async function launchIDE(ide: string, path: string): Promise<void> {
   await cmd.output();
 
   // Small delay to ensure the process has started
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 }

@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
-import { isGitRepo, getRepoRoot } from '../../src/git/repo.ts';
+import { getRepoRoot, isGitRepo } from '../../src/git/repo.ts';
 
 Deno.test('isGitRepo returns true when inside git repository', async () => {
   const tempRepo = await createTempGitRepo();
@@ -53,7 +53,7 @@ Deno.test('getRepoRoot throws when not in git repository', async () => {
     await assertRejects(
       () => getRepoRoot(),
       Error,
-      'Not in a git repository'
+      'Not in a git repository',
     );
   } finally {
     Deno.chdir(originalCwd);

@@ -18,7 +18,7 @@
 
 import { Confirm, Select } from '@cliffy/prompt';
 import { listWorktrees, removeWorktree } from '../git/worktree.ts';
-import { isGitRepo, getRepoRoot } from '../git/repo.ts';
+import { getRepoRoot, isGitRepo } from '../git/repo.ts';
 import { NotInGitRepoError, WorktreeNotFoundError } from '../utils/errors.ts';
 
 /**

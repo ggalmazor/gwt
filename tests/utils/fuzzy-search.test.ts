@@ -1,4 +1,4 @@
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { fuzzyMatch, fuzzySearch } from '../../src/utils/fuzzy-search.ts';
 
 Deno.test('fuzzyMatch returns true for exact matches', () => {

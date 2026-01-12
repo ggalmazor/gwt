@@ -90,7 +90,7 @@ export async function listWorktrees(): Promise<Worktree[]> {
 export async function addWorktree(
   path: string,
   branch: string,
-  newBranch?: string
+  newBranch?: string,
 ): Promise<void> {
   const args = ['worktree', 'add'];
 

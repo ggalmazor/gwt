@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { exists } from '@std/fs';
 import { join } from '@std/path';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';

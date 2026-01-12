@@ -1,4 +1,4 @@
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { join } from '@std/path';
 import { exists } from '@std/fs';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
@@ -102,7 +102,7 @@ Deno.test('loadConfig auto-migrates v1.0 config to v2.0', async () => {
     const configPath = join(configDir, 'config');
     await Deno.writeTextFile(
       configPath,
-      JSON.stringify({ version: '1.0', ide: 'idea' }, null, 2)
+      JSON.stringify({ version: '1.0', ide: 'idea' }, null, 2),
     );
 
     // Load config - should auto-migrate

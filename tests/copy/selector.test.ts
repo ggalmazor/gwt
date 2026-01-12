@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import { discoverFiles, selectFilesToCopyNonInteractive } from '../../src/copy/selector.ts';
 
@@ -39,7 +39,7 @@ Deno.test('discoverFiles lists all files and directories including hidden', asyn
     const files = await discoverFiles(tempRepo.path);
 
     // Check that all files and directories are found
-    const fileNames = files.map(f => f.name);
+    const fileNames = files.map((f) => f.name);
     assert(fileNames.includes('.env'));
     assert(fileNames.includes('.env.local'));
     assert(fileNames.includes('config.yml'));
@@ -61,7 +61,7 @@ Deno.test('discoverFiles filters out .git directory', async () => {
 
     const files = await discoverFiles(tempRepo.path);
 
-    const fileNames = files.map(f => f.name);
+    const fileNames = files.map((f) => f.name);
     assert(!fileNames.includes('.git'));
   } finally {
     Deno.chdir(originalCwd);
@@ -82,8 +82,8 @@ Deno.test('discoverFiles distinguishes files from directories', async () => {
 
     const files = await discoverFiles(tempRepo.path);
 
-    const envFile = files.find(f => f.name === '.env');
-    const ideaDir = files.find(f => f.name === '.idea');
+    const envFile = files.find((f) => f.name === '.env');
+    const ideaDir = files.find((f) => f.name === '.idea');
 
     assertEquals(envFile?.isDirectory, false);
     assertEquals(ideaDir?.isDirectory, true);
@@ -106,7 +106,7 @@ Deno.test('discoverFiles returns files sorted alphabetically', async () => {
     await Deno.writeTextFile('beta.txt', 'b');
 
     const files = await discoverFiles(tempRepo.path);
-    const names = files.map(f => f.name);
+    const names = files.map((f) => f.name);
 
     // Check that files are sorted (case-insensitive)
     const sortedNames = [...names].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -130,7 +130,7 @@ Deno.test('selectFilesToCopyNonInteractive returns selected files', async () => 
     await Deno.mkdir('.vscode');
 
     const files = await discoverFiles(tempRepo.path);
-    const selected = await selectFilesToCopyNonInteractive(files, ['.env', '.idea']);
+    const selected = selectFilesToCopyNonInteractive(files, ['.env', '.idea']);
 
     assertEquals(selected, ['.env', '.idea']);
   } finally {
@@ -147,7 +147,7 @@ Deno.test('selectFilesToCopyNonInteractive filters out invalid selections', asyn
     Deno.chdir(tempRepo.path);
 
     const files = await discoverFiles(tempRepo.path);
-    const selected = await selectFilesToCopyNonInteractive(files, ['.env', 'nonexistent.txt']);
+    const selected = selectFilesToCopyNonInteractive(files, ['.env', 'nonexistent.txt']);
 
     // Should only return valid selections
     assertEquals(selected.includes('.env'), false); // .env doesn't exist in temp repo
@@ -166,7 +166,7 @@ Deno.test('selectFilesToCopyNonInteractive handles empty selection', async () =>
     Deno.chdir(tempRepo.path);
 
     const files = await discoverFiles(tempRepo.path);
-    const selected = await selectFilesToCopyNonInteractive(files, []);
+    const selected = selectFilesToCopyNonInteractive(files, []);
 
     assertEquals(selected, []);
   } finally {
@@ -192,7 +192,7 @@ Deno.test('discoverFiles discovers files in subdirectories recursively', async (
     await Deno.writeTextFile('src/main.ts', 'console.log("hello")');
 
     const files = await discoverFiles(tempRepo.path);
-    const fileNames = files.map(f => f.name);
+    const fileNames = files.map((f) => f.name);
 
     // Should include files with relative paths
     assert(fileNames.includes('config/app.yml'));
@@ -219,8 +219,8 @@ Deno.test('discoverFiles marks files in subdirectories correctly', async () => {
 
     const files = await discoverFiles(tempRepo.path);
 
-    const appFile = files.find(f => f.name === 'config/app.yml');
-    const nestedDir = files.find(f => f.name === 'config/nested');
+    const appFile = files.find((f) => f.name === 'config/app.yml');
+    const nestedDir = files.find((f) => f.name === 'config/nested');
 
     assertEquals(appFile?.isDirectory, false);
     assertEquals(nestedDir?.isDirectory, true);

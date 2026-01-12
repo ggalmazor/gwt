@@ -54,5 +54,5 @@ export async function launchEditor(config: EditorConfig, path: string): Promise<
   await cmd.output();
 
   // Small delay to ensure the process has started
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 }

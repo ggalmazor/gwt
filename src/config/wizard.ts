@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Select, Input } from '@cliffy/prompt';
+import { Input, Select } from '@cliffy/prompt';
 import type { EditorConfig, EditorType } from './types.ts';
 import { saveConfig } from './manager.ts';
 import { getRepoRoot } from '../git/repo.ts';
@@ -36,7 +36,7 @@ export interface WizardOptions {
  * Runs the configuration wizard (non-interactive version for testing).
  */
 export async function runConfigWizardNonInteractive(
-  options: WizardOptions
+  options: WizardOptions,
 ): Promise<void> {
   const editor: EditorConfig = {
     type: options.editorType as EditorType,

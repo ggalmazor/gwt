@@ -1,4 +1,4 @@
-import { assertEquals, assert } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import { listBranches } from '../../src/git/branch.ts';
 

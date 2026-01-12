@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assertEquals, assertRejects } from '@std/assert';
+import { assertRejects } from '@std/assert';
 import { launchEditor } from '../../src/editor/launcher.ts';
 import type { EditorConfig } from '../../src/config/types.ts';
 
@@ -36,7 +36,7 @@ Deno.test('launchEditor throws when command not found', async () => {
   await assertRejects(
     () => launchEditor(config, '/tmp/test-path'),
     Error,
-    'not found'
+    'not found',
   );
 });
 
@@ -49,7 +49,7 @@ Deno.test('launchEditor throws when custom command not found', async () => {
   await assertRejects(
     () => launchEditor(config, '/tmp/test-path'),
     Error,
-    'not found'
+    'not found',
   );
 });
 

@@ -1,30 +1,36 @@
 # Git Worktree CLI Tool (gwt) - Implementation Plan
 
 ## Overview
+
 Build a TypeScript/Deno CLI tool to manage git worktrees with interactive branch selection, automatic file copying (.idea, .env*), and JetBrains IDE launching.
 
 ## Development Approach
 
 ### Test-Driven Development (TDD)
+
 This project will be built using strict TDD:
+
 1. **Red**: Write a failing test that defines desired behavior
 2. **Green**: Write minimal code to make the test pass
 3. **Refactor**: Clean up code while keeping tests green
 4. **Commit**: Commit after each green test cycle
 
 ### Grey-Box Testing Strategy
+
 - **Focus on observable behavior**: Test inputs and outputs, not internal implementation
 - **Minimize mocks**: Use real git operations in temporary repositories
 - **Integration-heavy**: Prefer end-to-end tests over isolated unit tests
 - **Test through public interfaces**: Test commands as a user would invoke them
 
 ### Commit Strategy
+
 - Commit after every test goes green (small, frequent commits)
 - Commit message format: `test: <description>` or `feat: <description>`
 - Each commit should represent a working, tested increment
 - Keep commits atomic and focused on single behavior
 
 ## Technical Stack
+
 - **Runtime**: Deno 2.6.4 (managed via ASDF)
 - **Language**: TypeScript
 - **CLI Framework**: Cliffy (commands + interactive prompts)
@@ -32,6 +38,7 @@ This project will be built using strict TDD:
 - **Compilation**: `deno compile` to standalone executable
 
 ## Project Structure
+
 ```
 gwt/
 ├── .tool-versions           # ASDF: deno 2.6.4
@@ -74,6 +81,7 @@ gwt/
 ```
 
 ## CLI Commands
+
 ```bash
 gwt list|ls                  # List all worktrees
 gwt create|add               # Interactive worktree creation
@@ -85,6 +93,7 @@ gwt config set <ide>         # Set IDE preference
 ## TDD Implementation Steps
 
 ### Phase 1: Project Setup & Test Infrastructure
+
 **Test First**: No application code yet, just setup
 
 1. Create `.tool-versions` with `deno 2.6.4`
@@ -99,6 +108,7 @@ gwt config set <ide>         # Set IDE preference
 ### Phase 2: Git Repository Detection (TDD Cycle 1)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/repo.test.ts
 Deno.test('isGitRepo returns true when inside git repository', async () => {
@@ -117,6 +127,7 @@ Deno.test('isGitRepo returns false when not in git repository', async () => {
 ```
 
 **Green Phase**:
+
 ```typescript
 // src/git/repo.ts
 export async function isGitRepo(): Promise<boolean> {
@@ -139,6 +150,7 @@ export async function isGitRepo(): Promise<boolean> {
 ### Phase 3: Get Repository Root (TDD Cycle 2)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/repo.test.ts
 Deno.test('getRepoRoot returns absolute path to repo root', async () => {
@@ -164,6 +176,7 @@ Deno.test('getRepoRoot throws when not in git repository', async () => {
 ### Phase 4: List Worktrees (TDD Cycle 3)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/worktree.test.ts
 Deno.test('listWorktrees returns empty array when no worktrees exist', async () => {
@@ -180,7 +193,7 @@ Deno.test('listWorktrees includes all worktrees', async () => {
   await tempRepo.createWorktree('feature-branch', '../feature-wt');
   const worktrees = await listWorktrees();
   assertEquals(worktrees.length, 2);
-  assert(worktrees.some(wt => wt.branch === 'feature-branch'));
+  assert(worktrees.some((wt) => wt.branch === 'feature-branch'));
   await tempRepo.cleanup();
 });
 ```
@@ -192,6 +205,7 @@ Deno.test('listWorktrees includes all worktrees', async () => {
 ### Phase 5: Create Worktree (TDD Cycle 4)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/worktree.test.ts
 Deno.test('addWorktree creates worktree for existing branch', async () => {
@@ -202,7 +216,7 @@ Deno.test('addWorktree creates worktree for existing branch', async () => {
   await addWorktree(wtPath, 'feature');
 
   const worktrees = await listWorktrees();
-  assert(worktrees.some(wt => wt.branch === 'feature'));
+  assert(worktrees.some((wt) => wt.branch === 'feature'));
 
   await tempRepo.cleanup();
 });
@@ -214,7 +228,7 @@ Deno.test('addWorktree creates new branch when newBranch specified', async () =>
   await addWorktree(wtPath, 'main', 'new-feature');
 
   const worktrees = await listWorktrees();
-  assert(worktrees.some(wt => wt.branch === 'new-feature'));
+  assert(worktrees.some((wt) => wt.branch === 'new-feature'));
 
   await tempRepo.cleanup();
 });
@@ -227,6 +241,7 @@ Deno.test('addWorktree creates new branch when newBranch specified', async () =>
 ### Phase 6: Delete Worktree (TDD Cycle 5)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/worktree.test.ts
 Deno.test('removeWorktree deletes worktree', async () => {
@@ -250,6 +265,7 @@ Deno.test('removeWorktree deletes worktree', async () => {
 ### Phase 7: List Branches (TDD Cycle 6)
 
 **Red Phase**:
+
 ```typescript
 // tests/git/branch.test.ts
 Deno.test('listBranches returns local and remote branches', async () => {
@@ -276,6 +292,7 @@ Deno.test('listBranches returns local and remote branches', async () => {
 ### Phase 8: Config Management (TDD Cycle 7)
 
 **Red Phase**:
+
 ```typescript
 // tests/config/manager.test.ts
 Deno.test('loadConfig returns null when config does not exist', async () => {
@@ -311,6 +328,7 @@ Deno.test('saveConfig creates .gwt/config with IDE preference', async () => {
 ### Phase 9: Copy .idea Directory (TDD Cycle 8)
 
 **Red Phase**:
+
 ```typescript
 // tests/copy/idea.test.ts
 Deno.test('copyIdeaDir copies .idea directory to destination', async () => {
@@ -348,6 +366,7 @@ Deno.test('copyIdeaDir does nothing when .idea does not exist', async () => {
 ### Phase 10: Copy .env Files (TDD Cycle 9)
 
 **Red Phase**:
+
 ```typescript
 // tests/copy/env.test.ts
 Deno.test('copyEnvFiles copies all .env* files', async () => {
@@ -388,6 +407,7 @@ Deno.test('copyEnvFiles skips nested .env files', async () => {
 ### Phase 11: List Command (TDD Cycle 10)
 
 **Red Phase**:
+
 ```typescript
 // tests/commands/list.test.ts
 Deno.test('list command displays worktrees in table format', async () => {
@@ -412,6 +432,7 @@ Deno.test('list command displays worktrees in table format', async () => {
 ### Phase 12: Delete Command (TDD Cycle 11)
 
 **Red Phase**:
+
 ```typescript
 // tests/commands/delete.test.ts
 Deno.test('delete command removes worktree by branch name', async () => {
@@ -435,6 +456,7 @@ Deno.test('delete command removes worktree by branch name', async () => {
 ### Phase 13: IDE Detection (TDD Cycle 12)
 
 **Red Phase**:
+
 ```typescript
 // tests/ide/launcher.test.ts
 Deno.test('detectAvailableIDEs returns IDEs available in PATH', async () => {
@@ -454,6 +476,7 @@ Deno.test('detectAvailableIDEs returns IDEs available in PATH', async () => {
 ### Phase 14: Integration Test - Full Create Flow (TDD Cycle 13)
 
 **Red Phase**:
+
 ```typescript
 // tests/integration/create.test.ts
 Deno.test('create command: full workflow without IDE launch', async () => {
@@ -480,7 +503,7 @@ Deno.test('create command: full workflow without IDE launch', async () => {
 
   // Verify worktree exists
   const worktrees = await listWorktrees();
-  assert(worktrees.some(wt => wt.branch === 'feature'));
+  assert(worktrees.some((wt) => wt.branch === 'feature'));
 
   // Verify .idea was copied
   assert(await exists(join(wtPath, '.idea', 'modules.xml')));
@@ -499,12 +522,14 @@ Deno.test('create command: full workflow without IDE launch', async () => {
 ### Phase 15: Interactive Create Command (TDD Cycle 14)
 
 **Note**: Interactive prompts are harder to test automatically. Strategy:
+
 - Separate prompt logic from business logic
 - Test business logic thoroughly (already done)
 - Create non-interactive variant that accepts all inputs as parameters
 - Interactive variant delegates to non-interactive after gathering inputs
 
 **Red Phase**:
+
 ```typescript
 // tests/commands/create.test.ts
 Deno.test('create command validates worktree path does not exist', async () => {
@@ -521,12 +546,13 @@ Deno.test('create command validates worktree path does not exist', async () => {
 
   // Try to create again at same path
   await assertRejects(
-    () => createWorktreeNonInteractive({
-      branch: 'feature',
-      path: wtPath,
-      skipIde: true,
-    }),
-    WorktreeExistsError
+    () =>
+      createWorktreeNonInteractive({
+        branch: 'feature',
+        path: wtPath,
+        skipIde: true,
+      }),
+    WorktreeExistsError,
   );
 
   await tempRepo.cleanup();
@@ -540,6 +566,7 @@ Deno.test('create command validates worktree path does not exist', async () => {
 ### Phase 16: CLI Integration (TDD Cycle 15)
 
 **Red Phase**:
+
 ```typescript
 // tests/integration/cli.test.ts
 Deno.test('CLI: gwt list shows worktrees', async () => {
@@ -563,6 +590,7 @@ Deno.test('CLI: gwt list shows worktrees', async () => {
 ### Phase 17: Compilation & Distribution
 
 **Manual Testing** (not automated):
+
 1. `deno task compile`
 2. Test binary: `./gwt list`, `./gwt create`, etc.
 3. Verify on different platforms if possible
@@ -572,17 +600,20 @@ Deno.test('CLI: gwt list shows worktrees', async () => {
 ## Grey-Box Testing Principles Applied
 
 ### What We Test
+
 - **Observable behavior**: Command outputs, file system changes, git state changes
 - **Real git operations**: Use actual `git` commands in temporary repositories
 - **Public interfaces**: Test through CLI commands and exported functions
 - **Error conditions**: Invalid inputs, missing files, wrong directories
 
 ### What We Don't Test
+
 - **Internal implementation details**: How parsing is done, intermediate data structures
 - **Private functions**: Only test through public APIs
 - **Exact string formatting**: Test that output contains key info, not exact format
 
 ### Avoiding Mocks
+
 - Use **real temporary git repositories** instead of mocking git commands
 - Use **real file system operations** in temporary directories
 - Only mock when absolutely necessary (e.g., interactive prompts in automated tests)
@@ -593,12 +624,14 @@ Deno.test('CLI: gwt list shows worktrees', async () => {
 After implementation, verify:
 
 ### Functional Tests (Automated)
+
 - [ ] All unit tests pass (`deno test`)
 - [ ] All integration tests pass
 - [ ] Test coverage for edge cases
 - [ ] Error scenarios properly tested
 
 ### Manual Testing
+
 - [ ] `gwt list` shows existing worktrees in table format
 - [ ] `gwt create` shows interactive branch selection
 - [ ] Creating worktree copies `.idea` directory
@@ -612,6 +645,7 @@ After implementation, verify:
 - [ ] Compiled binary works without Deno installed
 
 ### Edge Cases
+
 - [ ] Error when not in git repo
 - [ ] Error when worktree path exists
 - [ ] Works when no `.idea` directory
@@ -621,6 +655,7 @@ After implementation, verify:
 - [ ] Can delete by path or branch name
 
 ## Dependencies (deno.json)
+
 ```json
 {
   "imports": {
@@ -640,6 +675,7 @@ After implementation, verify:
 ```
 
 ## Permissions Required
+
 - `--allow-run`: Execute git commands, IDE launchers, which/where
 - `--allow-read`: Read git repo, config files, .idea, .env files
 - `--allow-write`: Write config files, copy files to worktrees

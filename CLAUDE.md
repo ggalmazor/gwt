@@ -5,7 +5,9 @@ This document provides guidelines for AI assistants (like Claude) when working o
 ## Development Philosophy
 
 ### Test-Driven Development (TDD)
+
 This project follows strict TDD:
+
 1. **Write a failing test first** (Red)
 2. **Write minimal code to pass the test** (Green)
 3. **Refactor while keeping tests green**
@@ -14,12 +16,14 @@ This project follows strict TDD:
 **Never write production code without a failing test first.**
 
 ### Grey-Box Testing Approach
+
 - **Test observable behavior**, not implementation details
 - **Use real git repositories** (temporary) instead of mocks
 - **Favor integration tests** over isolated unit tests
 - **Avoid mocking** except when absolutely necessary (e.g., interactive prompts)
 
 ### Commit Strategy
+
 - Commit after **every test goes green**
 - Use **small, atomic commits**
 - Commit message format:
@@ -59,18 +63,22 @@ gwt/
 ## TDD Workflow
 
 ### 1. Before Writing Any Code
+
 - Read the implementation plan (`docs/implementation-plan.md`)
 - Identify the next TDD cycle to implement
 - Understand the expected behavior
 
 ### 2. Red Phase
+
 Create a test file in `tests/` that mirrors the source structure:
+
 - If implementing `src/git/repo.ts`, create `tests/git/repo.test.ts`
 - Write one or more tests that define the expected behavior
 - Tests should **fail** when first run
 - Run `deno test` to confirm failure
 
 Example:
+
 ```typescript
 // tests/git/repo.test.ts
 import { assertEquals } from '@std/assert';
@@ -85,12 +93,14 @@ Deno.test('isGitRepo returns true when inside git repository', async () => {
 ```
 
 ### 3. Green Phase
+
 - Create the corresponding source file in `src/`
 - Write **minimal code** to make the test pass
 - Avoid over-engineering or adding features not tested
 - Run `deno test` until all tests pass
 
 Example:
+
 ```typescript
 // src/git/repo.ts
 export async function isGitRepo(): Promise<boolean> {
@@ -109,23 +119,27 @@ export async function isGitRepo(): Promise<boolean> {
 ```
 
 ### 4. Refactor Phase
+
 - Clean up code while keeping tests green
 - Extract duplicated logic
 - Improve naming
 - Run `deno test` frequently to ensure tests still pass
 
 ### 5. Commit
+
 ```bash
 git add tests/git/repo.test.ts src/git/repo.ts
 git commit -m "test: add git repository detection"
 ```
 
 ### 6. Repeat
+
 Move to the next TDD cycle in the implementation plan.
 
 ## Testing Guidelines
 
 ### Use Real Git Repositories
+
 Create temporary git repositories for tests:
 
 ```typescript
@@ -183,9 +197,11 @@ export async function createTempGitRepo() {
 ```
 
 ### Test Observable Behavior
+
 Focus on **what** the code does, not **how** it does it:
 
 ✅ Good:
+
 ```typescript
 Deno.test('listWorktrees returns all worktrees', async () => {
   const repo = await createTempGitRepo();
@@ -194,13 +210,14 @@ Deno.test('listWorktrees returns all worktrees', async () => {
   const worktrees = await listWorktrees();
 
   assertEquals(worktrees.length, 2);
-  assert(worktrees.some(wt => wt.branch === 'feature'));
+  assert(worktrees.some((wt) => wt.branch === 'feature'));
 
   await repo.cleanup();
 });
 ```
 
 ❌ Bad:
+
 ```typescript
 Deno.test('listWorktrees calls parseWorktreeOutput', async () => {
   // Don't test internal implementation details
@@ -211,9 +228,11 @@ Deno.test('listWorktrees calls parseWorktreeOutput', async () => {
 ```
 
 ### Minimize Mocking
+
 Use real implementations whenever possible:
 
 ✅ Good:
+
 ```typescript
 Deno.test('addWorktree creates worktree', async () => {
   const repo = await createTempGitRepo();
@@ -223,13 +242,14 @@ Deno.test('addWorktree creates worktree', async () => {
 
   // Verify with real git command
   const worktrees = await listWorktrees();
-  assert(worktrees.some(wt => wt.branch === 'feature'));
+  assert(worktrees.some((wt) => wt.branch === 'feature'));
 
   await repo.cleanup();
 });
 ```
 
 ❌ Bad:
+
 ```typescript
 Deno.test('addWorktree calls git command', async () => {
   // Avoid mocking git commands
@@ -240,6 +260,7 @@ Deno.test('addWorktree calls git command', async () => {
 ```
 
 ### Test Error Conditions
+
 Test both success and failure paths:
 
 ```typescript
@@ -266,6 +287,7 @@ Deno.test('addWorktree throws when path already exists', async () => {
 ```
 
 ### Integration Tests
+
 Test complete workflows:
 
 ```typescript
@@ -292,7 +314,7 @@ Deno.test('full worktree creation workflow', async () => {
 
   // Verify all side effects
   const worktrees = await listWorktrees();
-  assert(worktrees.some(wt => wt.branch === 'feature'));
+  assert(worktrees.some((wt) => wt.branch === 'feature'));
   assert(await exists(`${wtPath}/.idea/modules.xml`));
   assert(await exists(`${wtPath}/.env`));
 
@@ -318,6 +340,7 @@ deno coverage coverage
 ```
 
 Or use the task defined in `deno.json`:
+
 ```bash
 deno task test
 ```
@@ -325,6 +348,7 @@ deno task test
 ## Common Patterns
 
 ### Creating Test Helpers
+
 Put reusable test utilities in `tests/helpers/`:
 
 ```typescript
@@ -334,9 +358,11 @@ Put reusable test utilities in `tests/helpers/`:
 ```
 
 ### Handling Interactive Prompts
+
 For functions with prompts, create **two variants**:
 
 1. **Interactive variant** (for actual use):
+
 ```typescript
 // src/commands/create.ts
 export async function createWorktree() {
@@ -350,6 +376,7 @@ export async function createWorktree() {
 ```
 
 2. **Non-interactive variant** (for testing):
+
 ```typescript
 export async function createWorktreeNonInteractive(opts: {
   branch: string;
@@ -362,6 +389,7 @@ export async function createWorktreeNonInteractive(opts: {
 ```
 
 Test the non-interactive variant:
+
 ```typescript
 Deno.test('createWorktree copies files', async () => {
   await createWorktreeNonInteractive({
@@ -374,6 +402,7 @@ Deno.test('createWorktree copies files', async () => {
 ```
 
 ### Error Handling
+
 Define custom error types:
 
 ```typescript
@@ -390,6 +419,7 @@ export class WorktreeExistsError extends GwtError {}
 ```
 
 Test error conditions:
+
 ```typescript
 import { assertRejects } from '@std/assert';
 
@@ -422,6 +452,7 @@ deno task compile
 This creates a standalone binary `gwt` that includes the Deno runtime.
 
 Test the compiled binary:
+
 ```bash
 ./gwt list
 ./gwt create
@@ -430,6 +461,7 @@ Test the compiled binary:
 ## Summary: TDD Checklist
 
 For each feature:
+
 - [ ] Write failing test(s) that define expected behavior
 - [ ] Run tests to confirm failure (`deno test`)
 - [ ] Write minimal code to make tests pass

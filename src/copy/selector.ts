@@ -59,7 +59,7 @@ export async function discoverFiles(path: string): Promise<FileEntry[]> {
 async function walkDirectory(
   rootPath: string,
   currentPath: string,
-  entries: FileEntry[]
+  entries: FileEntry[],
 ): Promise<void> {
   for await (const entry of Deno.readDir(currentPath)) {
     // Filter out .git directory
@@ -93,14 +93,14 @@ async function walkDirectory(
  * @param selections - Array of file names to select
  * @returns Array of selected file names that exist in availableFiles
  */
-export async function selectFilesToCopyNonInteractive(
+export function selectFilesToCopyNonInteractive(
   availableFiles: FileEntry[],
-  selections: string[]
-): Promise<string[]> {
-  const availableNames = availableFiles.map(f => f.name);
+  selections: string[],
+): string[] {
+  const availableNames = availableFiles.map((f) => f.name);
 
   // Filter to only include valid selections
-  return selections.filter(name => availableNames.includes(name));
+  return selections.filter((name) => availableNames.includes(name));
 }
 
 /**
@@ -119,7 +119,7 @@ export async function selectFilesToCopy(availableFiles: FileEntry[]): Promise<st
 
   const selected = await Checkbox.prompt({
     message: 'Select files/directories to copy (space to toggle, enter to confirm):',
-    options: availableFiles.map(f => ({
+    options: availableFiles.map((f) => ({
       name: f.isDirectory ? `📁 ${f.name}` : `📄 ${f.name}`,
       value: f.name,
     })),

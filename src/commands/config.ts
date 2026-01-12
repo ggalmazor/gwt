@@ -55,7 +55,7 @@ async function showConfig(): Promise<void> {
   if (config.filesToCopy.length === 0) {
     console.log('  (none)');
   } else {
-    config.filesToCopy.forEach(file => {
+    config.filesToCopy.forEach((file) => {
       console.log(`  - ${file}`);
     });
   }

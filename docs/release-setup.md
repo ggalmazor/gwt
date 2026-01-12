@@ -15,6 +15,7 @@ This guide walks through setting up GitHub releases for gwt.
 Before pushing, update the following files with your GitHub username/org and repo name:
 
 **`install.sh`** (line 40 and 47):
+
 ```bash
 # Change:
 VERSION=$(curl -fsSL https://api.github.com/repos/OWNER/REPO/releases/latest ...)
@@ -26,11 +27,14 @@ URL="https://github.com/yourusername/gwt/releases/download/$VERSION/$FILE"
 ```
 
 **`README.md`** (multiple locations):
+
 ```markdown
 # Change all instances of:
+
 https://github.com/OWNER/REPO
 
 # To (example):
+
 https://github.com/yourusername/gwt
 ```
 
@@ -126,11 +130,13 @@ The release workflow (`.github/workflows/release.yml`):
 ### Build Fails
 
 Check the Actions tab on GitHub:
+
 ```
 https://github.com/yourusername/gwt/actions
 ```
 
 Common issues:
+
 - **Deno version**: Workflow uses latest v2.x
 - **Permissions**: Workflow has `contents: write` permission
 - **Dependencies**: All dependencies are fetched from JSR
@@ -144,6 +150,7 @@ Common issues:
 ### Binary Won't Run
 
 macOS users may see "unidentified developer" warning:
+
 ```bash
 # Allow the binary
 xattr -d com.apple.quarantine /usr/local/bin/gwt
@@ -164,6 +171,7 @@ https://raw.githubusercontent.com/yourusername/gwt/v1.0.0/install.sh
 ```
 
 Users can install with:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yourusername/gwt/main/install.sh | bash
 
@@ -174,6 +182,7 @@ curl -fsSL https://raw.githubusercontent.com/yourusername/gwt/main/install.sh | 
 ## GitHub Permissions
 
 The workflow requires these permissions (already configured):
+
 - `contents: write` - Create releases and upload assets
 
 These are granted via the `GITHUB_TOKEN` secret (automatically available).

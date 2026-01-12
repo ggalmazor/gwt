@@ -1,7 +1,7 @@
-import { assertEquals, assert, assertRejects } from '@std/assert';
+import { assert, assertEquals, assertRejects } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import { deleteWorktreeNonInteractive } from '../../src/commands/delete.ts';
-import { listWorktrees, addWorktree } from '../../src/git/worktree.ts';
+import { addWorktree, listWorktrees } from '../../src/git/worktree.ts';
 import { WorktreeNotFoundError } from '../../src/utils/errors.ts';
 
 Deno.test('deleteWorktreeNonInteractive removes worktree by path', async () => {
@@ -71,7 +71,7 @@ Deno.test('deleteWorktreeNonInteractive throws when worktree not found', async (
     await assertRejects(
       () => deleteWorktreeNonInteractive('non-existent'),
       WorktreeNotFoundError,
-      'Worktree not found: non-existent'
+      'Worktree not found: non-existent',
     );
   } finally {
     Deno.chdir(originalCwd);

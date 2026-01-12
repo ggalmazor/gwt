@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Select, Input } from '@cliffy/prompt';
+import { Input, Select } from '@cliffy/prompt';
 import { fuzzySearch } from './fuzzy-search.ts';
 
 export interface SelectOption<T> {
@@ -32,7 +32,7 @@ export interface SelectOption<T> {
 export async function selectWithFuzzySearch<T extends string>(
   message: string,
   options: SelectOption<T>[],
-  searchPrompt = 'Filter branches (press Enter to skip):'
+  searchPrompt = 'Filter branches (press Enter to skip):',
 ): Promise<T> {
   // Ask for search query first
   const searchQuery = await Input.prompt({
@@ -65,5 +65,5 @@ export async function selectWithFuzzySearch<T extends string>(
   return await Select.prompt({
     message,
     options: filteredOptions,
-  });
+  }) as T;
 }

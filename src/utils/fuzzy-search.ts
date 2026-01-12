@@ -68,7 +68,10 @@ function calculateMatchScore(query: string, target: string): number {
       score += 1 + consecutiveMatches;
 
       // Extra bonus for match at start of word
-      if (targetIndex === 0 || targetLower[targetIndex - 1] === '/' || targetLower[targetIndex - 1] === '-') {
+      if (
+        targetIndex === 0 || targetLower[targetIndex - 1] === '/' ||
+        targetLower[targetIndex - 1] === '-'
+      ) {
         score += 10;
       }
 

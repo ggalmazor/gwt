@@ -26,7 +26,7 @@ const program = new Command()
   .name('gwt')
   .version('1.0.0')
   .description('Git Worktree Manager - Manage git worktrees with ease')
-  .action(function() {
+  .action(function () {
     this.showHelp();
   })
   .command('list', 'List all worktrees')

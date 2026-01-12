@@ -5,12 +5,12 @@ This document outlines various approaches for distributing `gwt` to end-users.
 ## Quick Comparison
 
 | Method          | Ease of Install | Auto-updates | Cross-platform | Best For       |
-|-----------------|-----------------|--------------|----------------|----------------|
-| Homebrew        | ⭐⭐⭐⭐⭐           | ⭐⭐⭐⭐         | macOS/Linux    | Mac users      |
-| GitHub Releases | ⭐⭐⭐⭐            | ⭐⭐           | All            | General public |
-| Deno Install    | ⭐⭐⭐⭐            | ⭐⭐           | All            | Deno users     |
-| npm/npx         | ⭐⭐⭐⭐⭐           | ⭐⭐⭐⭐         | All            | Node users     |
-| Shell Script    | ⭐⭐⭐⭐⭐           | ⭐⭐⭐          | macOS/Linux    | Quick install  |
+| --------------- | --------------- | ------------ | -------------- | -------------- |
+| Homebrew        | ⭐⭐⭐⭐⭐      | ⭐⭐⭐⭐     | macOS/Linux    | Mac users      |
+| GitHub Releases | ⭐⭐⭐⭐        | ⭐⭐         | All            | General public |
+| Deno Install    | ⭐⭐⭐⭐        | ⭐⭐         | All            | Deno users     |
+| npm/npx         | ⭐⭐⭐⭐⭐      | ⭐⭐⭐⭐     | All            | Node users     |
+| Shell Script    | ⭐⭐⭐⭐⭐      | ⭐⭐⭐       | macOS/Linux    | Quick install  |
 
 ## 1. Homebrew Tap (Recommended for macOS)
 
@@ -293,8 +293,8 @@ deno task install
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const {promisify} = require('util');
-const {pipeline} = require('stream');
+const { promisify } = require('util');
+const { pipeline } = require('stream');
 
 const streamPipeline = promisify(pipeline);
 
@@ -320,7 +320,7 @@ const binDir = path.join(__dirname, '..', 'bin');
 const binPath = path.join(binDir, platform === 'win32' ? 'gwt.exe' : 'gwt');
 
 async function download() {
-  fs.mkdirSync(binDir, {recursive: true});
+  fs.mkdirSync(binDir, { recursive: true });
 
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -338,14 +338,14 @@ async function download() {
 }
 
 download()
-    .then(() => {
-      fs.chmodSync(binPath, 0o755);
-      console.log('gwt installed successfully!');
-    })
-    .catch((err) => {
-      console.error('Failed to download gwt:', err);
-      process.exit(1);
-    });
+  .then(() => {
+    fs.chmodSync(binPath, 0o755);
+    console.log('gwt installed successfully!');
+  })
+  .catch((err) => {
+    console.error('Failed to download gwt:', err);
+    process.exit(1);
+  });
 ```
 
 ### User Installation
@@ -553,7 +553,7 @@ Create PKGBUILD for AUR
 
 Add to `README.md`:
 
-```markdown
+````markdown
 ## Installation
 
 ### Quick Install (macOS/Linux)
@@ -561,6 +561,7 @@ Add to `README.md`:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yourusername/gwt/main/install.sh | bash
 ```
+````
 
 ### Homebrew (macOS)
 

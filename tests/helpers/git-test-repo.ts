@@ -92,7 +92,6 @@ export async function createTempGitRepo(): Promise<GitTestRepo> {
     async createRemoteBranch(name: string) {
       // Create a remote-tracking branch reference without actually having a remote
       // This is a bit of a hack for testing purposes
-      const [remote, branch] = name.split('/');
       await new Deno.Command('git', {
         args: ['branch', '-r', name],
         cwd: path,
