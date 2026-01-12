@@ -24,28 +24,18 @@ export interface FileEntry {
 }
 
 /**
- * Discovers all files and directories in a given path (non-recursive, depth 1).
+ * Discovers all files and directories in a given path recursively.
  * Includes hidden files but excludes .git directory.
- * Returns entries sorted alphabetically (case-insensitive).
+ * Returns entries with relative paths sorted alphabetically (case-insensitive).
  *
  * @param path - The directory path to scan
- * @returns Array of file entries with name and type information
+ * @returns Array of file entries with relative paths and type information
  */
 export async function discoverFiles(path: string): Promise<FileEntry[]> {
   const entries: FileEntry[] = [];
 
   try {
-    for await (const entry of Deno.readDir(path)) {
-      // Filter out .git directory
-      if (entry.name === '.git') {
-        continue;
-      }
-
-      entries.push({
-        name: entry.name,
-        isDirectory: entry.isDirectory,
-      });
-    }
+    await walkDirectory(path, path, entries);
   } catch (error) {
     if (error instanceof Deno.errors.NotFound) {
       return [];
@@ -57,6 +47,42 @@ export async function discoverFiles(path: string): Promise<FileEntry[]> {
   entries.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
   return entries;
+}
+
+/**
+ * Recursively walks a directory tree and collects file entries.
+ *
+ * @param rootPath - The root directory path (for building relative paths)
+ * @param currentPath - The current directory being scanned
+ * @param entries - Array to collect file entries
+ */
+async function walkDirectory(
+  rootPath: string,
+  currentPath: string,
+  entries: FileEntry[]
+): Promise<void> {
+  for await (const entry of Deno.readDir(currentPath)) {
+    // Filter out .git directory
+    if (entry.name === '.git') {
+      continue;
+    }
+
+    // Build relative path
+    const relativePath = currentPath === rootPath
+      ? entry.name
+      : `${currentPath.substring(rootPath.length + 1)}/${entry.name}`;
+
+    entries.push({
+      name: relativePath,
+      isDirectory: entry.isDirectory,
+    });
+
+    // Recurse into subdirectories
+    if (entry.isDirectory) {
+      const subPath = `${currentPath}/${entry.name}`;
+      await walkDirectory(rootPath, subPath, entries);
+    }
+  }
 }
 
 /**

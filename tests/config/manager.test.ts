@@ -110,7 +110,7 @@ Deno.test('loadConfig auto-migrates v1.0 config to v2.0', async () => {
     assertEquals(config?.version, '2.0');
     assertEquals(config?.editor.type, 'jetbrains');
     assertEquals(config?.editor.command, 'idea');
-    assertEquals(config?.filesToCopy, ['.idea', '.env*']);
+    assertEquals(config?.filesToCopy, []);
   } finally {
     Deno.chdir(originalCwd);
     await tempRepo.cleanup();

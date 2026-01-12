@@ -174,3 +174,58 @@ Deno.test('selectFilesToCopyNonInteractive handles empty selection', async () =>
     await tempRepo.cleanup();
   }
 });
+
+Deno.test('discoverFiles discovers files in subdirectories recursively', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create nested directory structure
+    await Deno.mkdir('config');
+    await Deno.writeTextFile('config/app.yml', 'app: config');
+    await Deno.writeTextFile('config/database.yml', 'db: config');
+    await Deno.mkdir('config/environments', { recursive: true });
+    await Deno.writeTextFile('config/environments/production.yml', 'prod: config');
+    await Deno.mkdir('src');
+    await Deno.writeTextFile('src/main.ts', 'console.log("hello")');
+
+    const files = await discoverFiles(tempRepo.path);
+    const fileNames = files.map(f => f.name);
+
+    // Should include files with relative paths
+    assert(fileNames.includes('config/app.yml'));
+    assert(fileNames.includes('config/database.yml'));
+    assert(fileNames.includes('config/environments/production.yml'));
+    assert(fileNames.includes('src/main.ts'));
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('discoverFiles marks files in subdirectories correctly', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create nested structure
+    await Deno.mkdir('config');
+    await Deno.writeTextFile('config/app.yml', 'app: config');
+    await Deno.mkdir('config/nested', { recursive: true });
+
+    const files = await discoverFiles(tempRepo.path);
+
+    const appFile = files.find(f => f.name === 'config/app.yml');
+    const nestedDir = files.find(f => f.name === 'config/nested');
+
+    assertEquals(appFile?.isDirectory, false);
+    assertEquals(nestedDir?.isDirectory, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
