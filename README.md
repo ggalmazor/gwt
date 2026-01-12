@@ -124,8 +124,12 @@ Configuration is stored in `.gwt/config` in your repository root:
 
 ```json
 {
-  "version": "1.0",
-  "ide": "idea"
+  "version": "2.0",
+  "editor": {
+    "type": "custom",
+    "command": "idea"
+  },
+  "filesToCopy": [".idea", ".env"]
 }
 ```
 

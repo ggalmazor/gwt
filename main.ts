@@ -24,7 +24,7 @@ import { configCommand } from './src/commands/config.ts';
 
 const program = new Command()
   .name('gwt')
-  .version('1.0.0')
+  .version('1.1.2')
   .description('Git Worktree Manager - Manage git worktrees with ease')
   .action(function () {
     this.showHelp();
