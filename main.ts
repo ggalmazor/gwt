@@ -14,7 +14,8 @@ await new Command()
     try {
       await listCommand();
     } catch (error) {
-      console.error(`Error: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
       Deno.exit(1);
     }
   })
@@ -24,7 +25,8 @@ await new Command()
     try {
       await createCommand();
     } catch (error) {
-      console.error(`Error: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
       Deno.exit(1);
     }
   })
@@ -34,7 +36,8 @@ await new Command()
     try {
       await deleteCommand(target);
     } catch (error) {
-      console.error(`Error: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
       Deno.exit(1);
     }
   })
