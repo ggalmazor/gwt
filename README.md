@@ -1,27 +1,29 @@
 # gwt - Git Worktree Manager
 
-A CLI tool to manage git worktrees with ease. Automatically copies `.idea` configuration and `.env` files to new worktrees, and launches your JetBrains IDE.
+[![CI](https://github.com/ggalmazor/gwt/actions/workflows/ci.yml/badge.svg)](https://github.com/ggalmazor/gwt/actions/workflows/ci.yml) [![Release](https://github.com/ggalmazor/gwt/actions/workflows/release.yml/badge.svg)](https://github.com/ggalmazor/gwt/actions/workflows/release.yml)
+
+A CLI tool to manage git worktrees with ease. Configure which files to copy and optionally launch your editor when creating new worktrees.
 
 ## Features
 
 - 🌳 **Interactive worktree creation** - Select branches with search, create new branches on the fly
 - 📋 **List all worktrees** - See all your worktrees in a clean table format
 - 🗑️ **Delete worktrees** - Remove worktrees interactively or by name
-- 💡 **IDE Integration** - Automatically launch JetBrains IDEs (IntelliJ, RubyMine, GoLand, etc.)
-- 📁 **Smart file copying** - Copies `.idea` directory and `.env*` files (excluding `.example` files)
-- ⚙️ **Remembers your preferences** - Saves IDE choice per repository in `.gwt/config`
+- 💡 **Editor integration** - Optionally launch any editor (VS Code, Vim, JetBrains IDEs, etc.)
+- 📁 **Configurable file copying** - Choose which files/directories to copy to new worktrees
+- ⚙️ **Per-repository configuration** - Settings saved in `.gwt/config` and respected across worktrees
 
 ## Installation
 
 ### Quick Install (macOS/Linux)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/OWNER/REPO/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash
 ```
 
 ### Manual Download
 
-Download the appropriate binary for your platform from [GitHub Releases](https://github.com/OWNER/REPO/releases/latest):
+Download the appropriate binary for your platform from [GitHub Releases](https://github.com/ggalmazor/gwt/releases/latest):
 
 - **macOS (Apple Silicon)**: `gwt-macos-arm64`
 - **macOS (Intel)**: `gwt-macos-x64`
@@ -45,9 +47,10 @@ export PATH="$HOME/bin:$PATH"  # Add to your shell profile
 ### From Source (requires Deno)
 
 ```bash
-git clone https://github.com/OWNER/REPO.git
+git clone https://github.com/ggalmazor/gwt.git
 cd gwt
-deno task install
+deno task compile
+sudo mv gwt /usr/local/bin/
 ```
 
 ## Usage
@@ -60,14 +63,19 @@ gwt create
 gwt add
 ```
 
-This will:
+On first use, `gwt` will run an interactive configuration wizard to set up:
+
+- Editor preference (none, or any command like `code`, `vim`, `idea`, etc.)
+- Files/directories to copy (select from your repository with search)
+
+After configuration, creating a worktree will:
 
 1. Show an interactive branch selector (type to search)
 2. Let you create a new branch if needed
 3. Prompt for the worktree path (with smart defaults)
 4. Create the worktree
-5. Copy `.idea` directory and `.env*` files
-6. Launch your IDE (prompts on first use, remembers your choice)
+5. Copy your configured files/directories
+6. Launch your configured editor (if not set to "none")
 
 ### List Worktrees
 
@@ -92,31 +100,31 @@ gwt delete feature-branch
 gwt delete /path/to/worktree
 ```
 
-### Configure IDE
+### Configure
 
 ```bash
 # View current configuration
 gwt config
 
-# Set IDE preference
-gwt config set idea        # IntelliJ IDEA
-gwt config set rubymine    # RubyMine
-gwt config set goland      # GoLand
-gwt config set webstorm    # WebStorm
-gwt config set pycharm     # PyCharm
-gwt config set phpstorm    # PhpStorm
-gwt config set clion       # CLion
-gwt config set rider       # Rider
+# Run configuration wizard (reconfigure editor and files)
+gwt config setup
 ```
+
+The wizard will prompt you to:
+
+1. Choose editor type (none or custom command)
+2. Enter editor command (e.g., `code`, `vim`, `idea`, `/usr/bin/nvim`)
+3. Select files/directories to copy (with search support)
 
 ## How It Works
 
 When you create a worktree, `gwt`:
 
 1. Creates a git worktree at your specified path
-2. Copies the `.idea` directory from your main worktree (preserves IDE settings)
-3. Copies all `.env*` files from the root (excludes `.example` files)
-4. Launches your configured JetBrains IDE at the new worktree path
+2. Copies your configured files/directories from the main worktree
+3. Launches your configured editor (if enabled) with the worktree path
+
+All settings are per-repository, so each project can have different editor and file preferences.
 
 ## Configuration
 
@@ -139,7 +147,7 @@ This file is git-ignored by default.
 
 - Git 2.5+ (for worktree support)
 - macOS or Linux
-- JetBrains IDE installed (if using IDE integration)
+- Optional: Any editor installed for editor integration
 
 ## Development
 
