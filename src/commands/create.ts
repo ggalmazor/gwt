@@ -22,12 +22,11 @@ import { exists } from '@std/fs';
 import { isGitRepo, getRepoRoot } from '../git/repo.ts';
 import { listBranches } from '../git/branch.ts';
 import { addWorktree } from '../git/worktree.ts';
-import { loadConfig, saveConfig } from '../config/manager.ts';
-import { copyIdeaDir } from '../copy/idea.ts';
-import { copyEnvFiles } from '../copy/env.ts';
-import { promptForIDE, launchIDE } from '../ide/launcher.ts';
-import { NotInGitRepoError, WorktreeExistsError } from '../utils/errors.ts';
-import { fuzzySearch } from '../utils/fuzzy-search.ts';
+import { loadConfig } from '../config/manager.ts';
+import { copyFiles } from '../copy/files.ts';
+import { launchEditor } from '../editor/launcher.ts';
+import { runConfigWizard } from '../config/wizard.ts';
+import { NotInGitRepoError } from '../utils/errors.ts';
 
 /**
  * Sanitize branch name for use in file system path.
@@ -154,31 +153,33 @@ export async function createCommand(): Promise<void> {
   await addWorktree(worktreePath, targetBranch, newBranch);
   console.log('✓ Worktree created');
 
-  // Copy .idea directory
-  console.log('Copying .idea directory...');
-  await copyIdeaDir(repoRoot, worktreePath);
-  console.log('✓ .idea directory copied');
-
-  // Copy .env files
-  console.log('Copying .env files...');
-  await copyEnvFiles(repoRoot, worktreePath);
-  console.log('✓ .env files copied');
-
-  // Get or prompt for IDE
+  // Load or create configuration
   let config = await loadConfig();
 
   if (!config) {
-    console.log('No IDE configuration found. Setting up...');
-    const ide = await promptForIDE();
-    await saveConfig({ ide });
-    config = { version: '1.0', ide };
-    console.log(`✓ IDE set to: ${ide}`);
+    console.log('\nNo configuration found. Running setup wizard...\n');
+    await runConfigWizard();
+    config = await loadConfig();
+
+    if (!config) {
+      throw new Error('Configuration setup failed');
+    }
   }
 
-  // Launch IDE
-  console.log(`Launching ${config.ide}...`);
-  await launchIDE(config.ide, worktreePath);
-  console.log('✓ IDE launched');
+  // Copy configured files
+  if (config.filesToCopy.length > 0) {
+    console.log('Copying configured files...');
+    await copyFiles(repoRoot, worktreePath, config.filesToCopy);
+    console.log(`✓ Copied ${config.filesToCopy.length} file(s)/directory(ies)`);
+  }
+
+  // Launch editor
+  if (config.editor.type !== 'none') {
+    const editorName = config.editor.command || 'editor';
+    console.log(`Launching ${editorName}...`);
+    await launchEditor(config.editor, worktreePath);
+    console.log('✓ Editor launched');
+  }
 
   console.log('');
   console.log(`Worktree ready at: ${worktreePath}`);
