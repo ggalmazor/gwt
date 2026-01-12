@@ -108,7 +108,8 @@ export async function createCommand(): Promise<void> {
   }
 
   // Generate default path
-  const branchForPath = newBranch || targetBranch.split('/').pop() || targetBranch;
+  // Use the full branch name - sanitizeBranchName will handle slashes
+  const branchForPath = newBranch || targetBranch;
   const defaultPath = await generateDefaultPath(branchForPath);
 
   // Prompt for worktree path
