@@ -22,8 +22,6 @@ import { saveConfig } from './manager.ts';
 import { getRepoRoot } from '../git/repo.ts';
 import { discoverFiles, selectFilesToCopy } from '../copy/selector.ts';
 import { isEditorAvailable } from '../editor/detector.ts';
-import { detectAvailableIDEs } from '../ide/launcher.ts';
-import { IDE_NAMES, type IdeCommand } from '../ide/types.ts';
 
 /**
  * Options for non-interactive wizard (for testing).
@@ -93,34 +91,6 @@ export async function runConfigWizard(): Promise<void> {
   });
 
   console.log('\n✓ Configuration saved');
-}
-
-/**
- * Select a JetBrains IDE from available ones.
- */
-async function selectJetBrainsIDE(): Promise<string> {
-  const availableIDEs = await detectAvailableIDEs();
-
-  if (availableIDEs.length === 0) {
-    console.log('⚠ No JetBrains IDEs found in PATH');
-    console.log('You can install one and run "gwt config setup" again');
-    throw new Error('No JetBrains IDEs available');
-  }
-
-  if (availableIDEs.length === 1) {
-    console.log(`Found IDE: ${IDE_NAMES[availableIDEs[0]]}`);
-    return availableIDEs[0];
-  }
-
-  const selected = await Select.prompt<IdeCommand>({
-    message: 'Select JetBrains IDE:',
-    options: availableIDEs.map((ide) => ({
-      name: IDE_NAMES[ide],
-      value: ide,
-    })),
-  });
-
-  return selected;
 }
 
 /**
