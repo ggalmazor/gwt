@@ -19,21 +19,26 @@ Deno.test('loadConfig returns null when config does not exist', async () => {
   }
 });
 
-Deno.test('saveConfig creates .gwt/config with IDE preference', async () => {
+Deno.test('saveConfig creates .gwt/config with v2.0 format', async () => {
   const tempRepo = await createTempGitRepo();
   const originalCwd = Deno.cwd();
 
   try {
     Deno.chdir(tempRepo.path);
 
-    await saveConfig({ ide: 'idea' });
+    await saveConfig({
+      editor: { type: 'jetbrains', command: 'idea' },
+      filesToCopy: ['.idea', '.env'],
+    });
 
     const configPath = join(tempRepo.path, '.gwt', 'config');
     assert(await exists(configPath));
 
     const config = await loadConfig();
-    assertEquals(config?.ide, 'idea');
-    assertEquals(config?.version, '1.0');
+    assertEquals(config?.version, '2.0');
+    assertEquals(config?.editor.type, 'jetbrains');
+    assertEquals(config?.editor.command, 'idea');
+    assertEquals(config?.filesToCopy, ['.idea', '.env']);
   } finally {
     Deno.chdir(originalCwd);
     await tempRepo.cleanup();
@@ -48,14 +53,21 @@ Deno.test('saveConfig updates existing config', async () => {
     Deno.chdir(tempRepo.path);
 
     // Save initial config
-    await saveConfig({ ide: 'idea' });
+    await saveConfig({
+      editor: { type: 'jetbrains', command: 'idea' },
+      filesToCopy: ['.idea'],
+    });
     let config = await loadConfig();
-    assertEquals(config?.ide, 'idea');
+    assertEquals(config?.editor.command, 'idea');
 
     // Update config
-    await saveConfig({ ide: 'rubymine' });
+    await saveConfig({
+      editor: { type: 'jetbrains', command: 'rubymine' },
+      filesToCopy: ['.idea', '.env'],
+    });
     config = await loadConfig();
-    assertEquals(config?.ide, 'rubymine');
+    assertEquals(config?.editor.command, 'rubymine');
+    assertEquals(config?.filesToCopy, ['.idea', '.env']);
   } finally {
     Deno.chdir(originalCwd);
     await tempRepo.cleanup();
@@ -74,5 +86,77 @@ Deno.test('loadConfig returns null when not in git repository', async () => {
   } finally {
     Deno.chdir(originalCwd);
     await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test('loadConfig auto-migrates v1.0 config to v2.0', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create a v1.0 config file manually
+    const configDir = join(tempRepo.path, '.gwt');
+    await Deno.mkdir(configDir, { recursive: true });
+    const configPath = join(configDir, 'config');
+    await Deno.writeTextFile(
+      configPath,
+      JSON.stringify({ version: '1.0', ide: 'idea' }, null, 2)
+    );
+
+    // Load config - should auto-migrate
+    const config = await loadConfig();
+    assertEquals(config?.version, '2.0');
+    assertEquals(config?.editor.type, 'jetbrains');
+    assertEquals(config?.editor.command, 'idea');
+    assertEquals(config?.filesToCopy, ['.idea', '.env*']);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('saveConfig saves v2.0 format', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    await saveConfig({
+      editor: { type: 'custom', command: 'code' },
+      filesToCopy: ['.vscode', '.env'],
+    });
+
+    const config = await loadConfig();
+    assertEquals(config?.version, '2.0');
+    assertEquals(config?.editor.type, 'custom');
+    assertEquals(config?.editor.command, 'code');
+    assertEquals(config?.filesToCopy, ['.vscode', '.env']);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('saveConfig with editor type "none" has no command', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    await saveConfig({
+      editor: { type: 'none' },
+      filesToCopy: ['.env'],
+    });
+
+    const config = await loadConfig();
+    assertEquals(config?.editor.type, 'none');
+    assertEquals(config?.editor.command, undefined);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
   }
 });

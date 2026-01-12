@@ -19,7 +19,8 @@
 import { join } from '@std/path';
 import { ensureDir, exists } from '@std/fs';
 import { getRepoRoot, isGitRepo } from '../git/repo.ts';
-import type { Config } from './types.ts';
+import type { Config, ConfigV1, EditorConfig } from './types.ts';
+import { migrateConfig } from './migration.ts';
 
 const CONFIG_DIR = '.gwt';
 const CONFIG_FILE = 'config';
@@ -39,7 +40,8 @@ async function getConfigPath(): Promise<string | null> {
 
 /**
  * Load the configuration from .gwt/config.
- * @returns the config object, or null if it doesn't exist or not in a git repo
+ * Auto-migrates v1.0 configs to v2.0 format.
+ * @returns the config object (v2.0), or null if it doesn't exist or not in a git repo
  */
 export async function loadConfig(): Promise<Config | null> {
   const configPath = await getConfigPath();
@@ -54,7 +56,10 @@ export async function loadConfig(): Promise<Config | null> {
 
   try {
     const content = await Deno.readTextFile(configPath);
-    const config = JSON.parse(content) as Config;
+    const rawConfig = JSON.parse(content) as Config | ConfigV1;
+
+    // Auto-migrate to v2.0 if needed
+    const config = migrateConfig(rawConfig);
     return config;
   } catch {
     return null;
@@ -62,10 +67,13 @@ export async function loadConfig(): Promise<Config | null> {
 }
 
 /**
- * Save the configuration to .gwt/config.
- * @param config - the config object to save (only IDE preference for now)
+ * Save the configuration to .gwt/config (v2.0 format).
+ * @param config - the config data to save (editor and filesToCopy)
  */
-export async function saveConfig(config: { ide: string }): Promise<void> {
+export async function saveConfig(config: {
+  editor: EditorConfig;
+  filesToCopy: string[];
+}): Promise<void> {
   const configPath = await getConfigPath();
 
   if (!configPath) {
@@ -78,10 +86,11 @@ export async function saveConfig(config: { ide: string }): Promise<void> {
   // Ensure .gwt directory exists
   await ensureDir(configDir);
 
-  // Create full config object
+  // Create full v2.0 config object
   const fullConfig: Config = {
-    version: '1.0',
-    ide: config.ide,
+    version: '2.0',
+    editor: config.editor,
+    filesToCopy: config.filesToCopy,
   };
 
   // Write config file
