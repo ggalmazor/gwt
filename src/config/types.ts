@@ -16,7 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-export interface Config {
+// Version 1.0 config (for backward compatibility and migration)
+export interface ConfigV1 {
   version: string;
   ide: string;
+}
+
+// Version 2.0 config types
+export type EditorType = 'jetbrains' | 'custom' | 'none';
+
+export interface EditorConfig {
+  type: EditorType;
+  command?: string; // For jetbrains: IDE key (e.g., 'idea'), for custom: command/path
+}
+
+export interface Config {
+  version: string;
+  editor: EditorConfig;
+  filesToCopy: string[]; // File/directory names or glob patterns
 }
