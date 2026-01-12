@@ -95,3 +95,22 @@ export async function addWorktree(
     throw new Error(`Failed to create worktree: ${stderr}`);
   }
 }
+
+/**
+ * Remove a worktree.
+ * @param path - the path to the worktree to remove
+ */
+export async function removeWorktree(path: string): Promise<void> {
+  const cmd = new Deno.Command('git', {
+    args: ['worktree', 'remove', path],
+    stdout: 'piped',
+    stderr: 'piped',
+  });
+
+  const output = await cmd.output();
+
+  if (!output.success) {
+    const stderr = new TextDecoder().decode(output.stderr);
+    throw new Error(`Failed to remove worktree: ${stderr}`);
+  }
+}
