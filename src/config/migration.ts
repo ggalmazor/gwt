@@ -39,7 +39,7 @@ export function migrateConfig(config: ConfigV1 | Config): Config {
       type: 'jetbrains',
       command: v1Config.ide,
     },
-    filesToCopy: ['.idea', '.env*'], // Default files for migrated configs
+    filesToCopy: [], // Default to empty file list
   };
 }
 

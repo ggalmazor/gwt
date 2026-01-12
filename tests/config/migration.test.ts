@@ -20,7 +20,7 @@ import { assertEquals } from '@std/assert';
 import { migrateConfig } from '../../src/config/migration.ts';
 import type { Config, ConfigV1 } from '../../src/config/types.ts';
 
-Deno.test('migrateConfig converts v1.0 config to v2.0 with default files', () => {
+Deno.test('migrateConfig converts v1.0 config to v2.0 with empty file list', () => {
   const v1Config: ConfigV1 = {
     version: '1.0',
     ide: 'idea',
@@ -31,7 +31,7 @@ Deno.test('migrateConfig converts v1.0 config to v2.0 with default files', () =>
   assertEquals(result.version, '2.0');
   assertEquals(result.editor.type, 'jetbrains');
   assertEquals(result.editor.command, 'idea');
-  assertEquals(result.filesToCopy, ['.idea', '.env*']);
+  assertEquals(result.filesToCopy, []);
 });
 
 Deno.test('migrateConfig handles missing version field (assumes v1.0)', () => {
@@ -44,7 +44,7 @@ Deno.test('migrateConfig handles missing version field (assumes v1.0)', () => {
   assertEquals(result.version, '2.0');
   assertEquals(result.editor.type, 'jetbrains');
   assertEquals(result.editor.command, 'rubymine');
-  assertEquals(result.filesToCopy, ['.idea', '.env*']);
+  assertEquals(result.filesToCopy, []);
 });
 
 Deno.test('migrateConfig returns v2.0 config unchanged', () => {
