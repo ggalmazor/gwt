@@ -60,28 +60,12 @@ export async function createCommand(): Promise<void> {
     });
   }
 
-  // Prompt for branch selection with fuzzy search
+  // Prompt for branch selection with built-in search
+  // Cliffy's search uses substring matching by default, which works well enough
   const selection = await Select.prompt({
     message: 'Select branch for new worktree (type to search):',
     options,
     search: true,
-    searchLabel: 'Search:',
-    searchIcon: '🔍',
-    // Custom search function using our fuzzy search
-    filter: (query: string) => {
-      if (query.length === 0) return options;
-
-      // Extract just the branch names for searching (skip separators and "Create new")
-      const searchableOptions = options
-        .filter((opt) => !opt.value.startsWith('__'))
-        .map((opt) => opt.value);
-
-      // Perform fuzzy search
-      const matches = fuzzySearch(query, searchableOptions);
-
-      // Return matched options
-      return options.filter((opt) => matches.includes(opt.value));
-    },
   });
 
   let targetBranch: string;
@@ -103,23 +87,13 @@ export async function createCommand(): Promise<void> {
       },
     });
 
-    const baseBranchOptions = [
-      ...branches.local.map((branch) => ({ name: `  ${branch}`, value: branch })),
-      ...branches.remote.map((branch) => ({ name: `  ${branch}`, value: branch })),
-    ];
-
     baseBranch = await Select.prompt({
       message: 'Select base branch (type to search):',
-      options: baseBranchOptions,
+      options: [
+        ...branches.local.map((branch) => ({ name: `  ${branch}`, value: branch })),
+        ...branches.remote.map((branch) => ({ name: `  ${branch}`, value: branch })),
+      ],
       search: true,
-      searchLabel: 'Search:',
-      searchIcon: '🔍',
-      filter: (query: string) => {
-        if (query.length === 0) return baseBranchOptions;
-        const allBranches = [...branches.local, ...branches.remote];
-        const matches = fuzzySearch(query, allBranches);
-        return baseBranchOptions.filter((opt) => matches.includes(opt.value));
-      },
     });
 
     targetBranch = baseBranch;
