@@ -43,7 +43,7 @@ Deno.test('runConfigWizardNonInteractive creates config with none editor', async
   }
 });
 
-Deno.test('runConfigWizardNonInteractive creates config with jetbrains editor', async () => {
+Deno.test('runConfigWizardNonInteractive creates config with custom editor command', async () => {
   const tempRepo = await createTempGitRepo();
   const originalCwd = Deno.cwd();
 
@@ -51,13 +51,13 @@ Deno.test('runConfigWizardNonInteractive creates config with jetbrains editor', 
     Deno.chdir(tempRepo.path);
 
     await runConfigWizardNonInteractive({
-      editorType: 'jetbrains',
+      editorType: 'custom',
       editorCommand: 'idea',
       files: ['.idea', '.env'],
     });
 
     const config = await loadConfig();
-    assertEquals(config?.editor.type, 'jetbrains');
+    assertEquals(config?.editor.type, 'custom');
     assertEquals(config?.editor.command, 'idea');
     assertEquals(config?.filesToCopy, ['.idea', '.env']);
   } finally {

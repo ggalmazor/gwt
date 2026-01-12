@@ -43,9 +43,6 @@ async function showConfig(): Promise<void> {
   console.log('Editor:');
   if (config.editor.type === 'none') {
     console.log('  Type: None (editor launching disabled)');
-  } else if (config.editor.type === 'jetbrains') {
-    console.log('  Type: JetBrains IDE');
-    console.log(`  Command: ${config.editor.command}`);
   } else if (config.editor.type === 'custom') {
     console.log('  Type: Custom command');
     console.log(`  Command: ${config.editor.command}`);

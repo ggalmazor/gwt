@@ -64,7 +64,6 @@ export async function runConfigWizard(): Promise<void> {
     message: 'Select editor type:',
     options: [
       { name: 'None (disable editor launching)', value: 'none' },
-      { name: 'JetBrains IDE (IntelliJ, RubyMine, etc.)', value: 'jetbrains' },
       { name: 'Custom command', value: 'custom' },
     ],
   });
@@ -72,9 +71,7 @@ export async function runConfigWizard(): Promise<void> {
   let editorCommand: string | undefined;
 
   // Step 2: Get editor command based on type
-  if (editorType === 'jetbrains') {
-    editorCommand = await selectJetBrainsIDE();
-  } else if (editorType === 'custom') {
+  if (editorType === 'custom') {
     editorCommand = await promptCustomEditor();
   }
 

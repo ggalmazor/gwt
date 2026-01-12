@@ -36,7 +36,7 @@ export function migrateConfig(config: ConfigV1 | Config): Config {
   return {
     version: '2.0',
     editor: {
-      type: 'jetbrains',
+      type: 'custom',
       command: v1Config.ide,
     },
     filesToCopy: [], // Default to empty file list

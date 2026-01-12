@@ -27,7 +27,7 @@ Deno.test('saveConfig creates .gwt/config with v2.0 format', async () => {
     Deno.chdir(tempRepo.path);
 
     await saveConfig({
-      editor: { type: 'jetbrains', command: 'idea' },
+      editor: { type: 'custom', command: 'idea' },
       filesToCopy: ['.idea', '.env'],
     });
 
@@ -36,7 +36,7 @@ Deno.test('saveConfig creates .gwt/config with v2.0 format', async () => {
 
     const config = await loadConfig();
     assertEquals(config?.version, '2.0');
-    assertEquals(config?.editor.type, 'jetbrains');
+    assertEquals(config?.editor.type, 'custom');
     assertEquals(config?.editor.command, 'idea');
     assertEquals(config?.filesToCopy, ['.idea', '.env']);
   } finally {
@@ -54,7 +54,7 @@ Deno.test('saveConfig updates existing config', async () => {
 
     // Save initial config
     await saveConfig({
-      editor: { type: 'jetbrains', command: 'idea' },
+      editor: { type: 'custom', command: 'idea' },
       filesToCopy: ['.idea'],
     });
     let config = await loadConfig();
@@ -62,7 +62,7 @@ Deno.test('saveConfig updates existing config', async () => {
 
     // Update config
     await saveConfig({
-      editor: { type: 'jetbrains', command: 'rubymine' },
+      editor: { type: 'custom', command: 'rubymine' },
       filesToCopy: ['.idea', '.env'],
     });
     config = await loadConfig();
@@ -108,7 +108,7 @@ Deno.test('loadConfig auto-migrates v1.0 config to v2.0', async () => {
     // Load config - should auto-migrate
     const config = await loadConfig();
     assertEquals(config?.version, '2.0');
-    assertEquals(config?.editor.type, 'jetbrains');
+    assertEquals(config?.editor.type, 'custom');
     assertEquals(config?.editor.command, 'idea');
     assertEquals(config?.filesToCopy, []);
   } finally {

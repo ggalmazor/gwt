@@ -40,9 +40,9 @@ Deno.test('launchEditor throws when command not found', async () => {
   );
 });
 
-Deno.test('launchEditor throws when jetbrains IDE not found', async () => {
+Deno.test('launchEditor throws when custom command not found', async () => {
   const config: EditorConfig = {
-    type: 'jetbrains',
+    type: 'custom',
     command: 'nonexistent-ide',
   };
 
@@ -55,5 +55,4 @@ Deno.test('launchEditor throws when jetbrains IDE not found', async () => {
 
 // Note: Testing actual editor launches is difficult without mocking
 // Manual testing required for:
-// - JetBrains IDE launch with path
 // - Custom command launch with path

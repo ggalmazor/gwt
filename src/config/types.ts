@@ -23,11 +23,11 @@ export interface ConfigV1 {
 }
 
 // Version 2.0 config types
-export type EditorType = 'jetbrains' | 'custom' | 'none';
+export type EditorType = 'custom' | 'none';
 
 export interface EditorConfig {
   type: EditorType;
-  command?: string; // For jetbrains: IDE key (e.g., 'idea'), for custom: command/path
+  command?: string; // For custom: command/path (e.g., 'idea', 'code', '/usr/bin/vim')
 }
 
 export interface Config {

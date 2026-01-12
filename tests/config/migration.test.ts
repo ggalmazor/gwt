@@ -29,7 +29,7 @@ Deno.test('migrateConfig converts v1.0 config to v2.0 with empty file list', () 
   const result = migrateConfig(v1Config);
 
   assertEquals(result.version, '2.0');
-  assertEquals(result.editor.type, 'jetbrains');
+  assertEquals(result.editor.type, 'custom');
   assertEquals(result.editor.command, 'idea');
   assertEquals(result.filesToCopy, []);
 });
@@ -42,7 +42,7 @@ Deno.test('migrateConfig handles missing version field (assumes v1.0)', () => {
   const result = migrateConfig(v1Config);
 
   assertEquals(result.version, '2.0');
-  assertEquals(result.editor.type, 'jetbrains');
+  assertEquals(result.editor.type, 'custom');
   assertEquals(result.editor.command, 'rubymine');
   assertEquals(result.filesToCopy, []);
 });
@@ -62,7 +62,7 @@ Deno.test('migrateConfig returns v2.0 config unchanged', () => {
   assertEquals(result, v2Config);
 });
 
-Deno.test('migrateConfig handles different JetBrains IDEs', () => {
+Deno.test('migrateConfig handles different IDE commands', () => {
   const ides = ['idea', 'rubymine', 'goland', 'webstorm', 'pycharm', 'phpstorm', 'clion', 'rider'];
 
   for (const ide of ides) {
@@ -73,7 +73,7 @@ Deno.test('migrateConfig handles different JetBrains IDEs', () => {
 
     const result = migrateConfig(v1Config);
 
-    assertEquals(result.editor.type, 'jetbrains');
+    assertEquals(result.editor.type, 'custom');
     assertEquals(result.editor.command, ide);
   }
 });
