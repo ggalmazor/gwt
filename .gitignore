@@ -1,0 +1,25 @@
+# Deno
+.deno/
+deno.lock
+
+# Compiled binaries
+/gwt
+/dist/
+
+# Coverage
+/coverage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+tmp/
+temp/
