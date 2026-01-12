@@ -30,9 +30,9 @@ await new Command()
       Deno.exit(1);
     }
   })
-  .command('delete <target:string>', 'Delete a worktree (by path or branch name)')
+  .command('delete [target:string]', 'Delete a worktree (interactive if no target)')
   .alias('remove')
-  .action(async (_options, target: string) => {
+  .action(async (_options, target?: string) => {
     try {
       await deleteCommand(target);
     } catch (error) {
