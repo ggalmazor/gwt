@@ -17,10 +17,10 @@
  */
 
 import { Command } from '@cliffy/command';
-import { loadConfig, saveConfig } from '../config/manager.ts';
+import { loadConfig } from '../config/manager.ts';
 import { isGitRepo } from '../git/repo.ts';
 import { NotInGitRepoError } from '../utils/errors.ts';
-import { IDE_COMMANDS } from '../ide/types.ts';
+import { runConfigWizard } from '../config/wizard.ts';
 
 async function showConfig(): Promise<void> {
   // Check if in git repository
@@ -32,32 +32,52 @@ async function showConfig(): Promise<void> {
 
   if (!config) {
     console.log('No configuration found.');
-    console.log('Configuration will be created when you create your first worktree.');
+    console.log('Run "gwt config setup" to configure gwt for this repository.');
     return;
   }
 
   console.log('Configuration:');
-  console.log(`  IDE: ${config.ide}`);
+  console.log('');
+
+  // Display editor configuration
+  console.log('Editor:');
+  if (config.editor.type === 'none') {
+    console.log('  Type: None (editor launching disabled)');
+  } else if (config.editor.type === 'jetbrains') {
+    console.log('  Type: JetBrains IDE');
+    console.log(`  Command: ${config.editor.command}`);
+  } else if (config.editor.type === 'custom') {
+    console.log('  Type: Custom command');
+    console.log(`  Command: ${config.editor.command}`);
+  }
+
+  console.log('');
+
+  // Display files to copy
+  console.log('Files to copy:');
+  if (config.filesToCopy.length === 0) {
+    console.log('  (none)');
+  } else {
+    config.filesToCopy.forEach(file => {
+      console.log(`  - ${file}`);
+    });
+  }
+
+  console.log('');
+  console.log('Run "gwt config setup" to reconfigure.');
 }
 
-async function setIde(ide: string): Promise<void> {
+async function setupConfig(): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
   }
 
-  // Validate IDE
-  if (!(ide in IDE_COMMANDS)) {
-    const validIdes = Object.keys(IDE_COMMANDS).join(', ');
-    throw new Error(`Invalid IDE: ${ide}. Valid options: ${validIdes}`);
-  }
-
-  await saveConfig({ ide });
-  console.log(`IDE set to: ${ide}`);
+  await runConfigWizard();
 }
 
 export const configCommand = new Command()
   .description('View or update configuration')
   .action(showConfig)
-  .command('set <ide:string>', 'Set the IDE preference')
-  .action((_options, ide) => setIde(ide));
+  .command('setup', 'Run the interactive configuration wizard')
+  .action(setupConfig);
