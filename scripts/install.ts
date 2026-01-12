@@ -72,7 +72,8 @@ try {
   await Deno.chmod(TARGET_BINARY, 0o755);
   console.log('  ✓ Permissions set');
 } catch (error) {
-  console.error(`❌ Installation failed: ${error.message}`);
+  const message = (error instanceof Error) ? error.message : error;
+  console.error(`❌ Installation failed: ${message}`);
   Deno.exit(1);
 }
 
