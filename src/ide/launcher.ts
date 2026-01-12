@@ -75,15 +75,28 @@ export async function launchIDE(ide: string, path: string): Promise<void> {
     throw new IdeNotFoundError(ide);
   }
 
-  // Launch IDE in detached mode (non-blocking)
-  const cmd = new Deno.Command(ide, {
-    args: [path],
+  // Get the full path to the IDE command
+  const whichCmd = new Deno.Command('which', {
+    args: [ide],
+    stdout: 'piped',
+    stderr: 'piped',
+  });
+  const whichOutput = await whichCmd.output();
+  const idePath = new TextDecoder().decode(whichOutput.stdout).trim();
+
+  // Launch IDE in background using nohup for proper detachment
+  // This ensures the IDE continues running even after gwt exits
+  const cmd = new Deno.Command('nohup', {
+    args: [idePath, path],
     stdout: 'null',
     stderr: 'null',
     stdin: 'null',
   });
 
-  // Spawn without waiting for completion
+  // Spawn and detach - don't wait for completion
   const child = cmd.spawn();
-  child.unref(); // Allow process to continue without waiting
+  child.unref();
+
+  // Give it a moment to start
+  await new Promise(resolve => setTimeout(resolve, 100));
 }
