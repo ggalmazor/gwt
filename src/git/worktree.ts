@@ -62,3 +62,36 @@ export async function listWorktrees(): Promise<Worktree[]> {
   const stdout = new TextDecoder().decode(output.stdout);
   return parseWorktreeList(stdout);
 }
+
+/**
+ * Add a new worktree.
+ * @param path - the path where the worktree will be created
+ * @param branch - the branch to checkout in the worktree
+ * @param newBranch - optional name for a new branch to create
+ */
+export async function addWorktree(
+  path: string,
+  branch: string,
+  newBranch?: string
+): Promise<void> {
+  const args = ['worktree', 'add'];
+
+  if (newBranch) {
+    args.push('-b', newBranch);
+  }
+
+  args.push(path, branch);
+
+  const cmd = new Deno.Command('git', {
+    args,
+    stdout: 'piped',
+    stderr: 'piped',
+  });
+
+  const output = await cmd.output();
+
+  if (!output.success) {
+    const stderr = new TextDecoder().decode(output.stderr);
+    throw new Error(`Failed to create worktree: ${stderr}`);
+  }
+}

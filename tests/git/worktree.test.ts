@@ -1,6 +1,6 @@
 import { assertEquals, assert } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
-import { listWorktrees } from '../../src/git/worktree.ts';
+import { listWorktrees, addWorktree } from '../../src/git/worktree.ts';
 
 Deno.test('listWorktrees returns main worktree when no additional worktrees exist', async () => {
   const tempRepo = await createTempGitRepo();
@@ -59,6 +59,51 @@ Deno.test('listWorktrees parses worktree information correctly', async () => {
     assert(mainWorktree.branch === 'main');
     assert(mainWorktree.commit);
     assert(mainWorktree.commit.length === 40); // SHA-1 hash length
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('addWorktree creates worktree for existing branch', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    await tempRepo.createBranch('feature');
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+
+    await addWorktree(wtPath, 'feature');
+
+    const worktrees = await listWorktrees();
+    assert(worktrees.some((wt) => wt.branch === 'feature'));
+
+    // Cleanup
+    await Deno.remove(wtPath, { recursive: true });
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('addWorktree creates new branch when newBranch specified', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+
+    await addWorktree(wtPath, 'main', 'new-feature');
+
+    const worktrees = await listWorktrees();
+    assert(worktrees.some((wt) => wt.branch === 'new-feature'));
+
+    // Cleanup
+    await Deno.remove(wtPath, { recursive: true });
   } finally {
     Deno.chdir(originalCwd);
     await tempRepo.cleanup();
