@@ -46,3 +46,21 @@ export class IdeNotFoundError extends GwtError {
     super(`IDE command not found: ${ide}`);
   }
 }
+
+export class InvalidConfigVersionError extends GwtError {
+  constructor(version: string) {
+    super(`Unsupported config version: ${version}`);
+  }
+}
+
+export class EditorNotFoundError extends GwtError {
+  constructor(command: string) {
+    super(`Editor command not found: ${command}. Install it or run 'gwt config setup'`);
+  }
+}
+
+export class InvalidFilePatternError extends GwtError {
+  constructor(pattern: string) {
+    super(`Invalid file pattern: ${pattern}`);
+  }
+}
