@@ -9,6 +9,7 @@ import { copyIdeaDir } from '../copy/idea.ts';
 import { copyEnvFiles } from '../copy/env.ts';
 import { promptForIDE, launchIDE } from '../ide/launcher.ts';
 import { NotInGitRepoError, WorktreeExistsError } from '../utils/errors.ts';
+import { fuzzySearch } from '../utils/fuzzy-search.ts';
 
 /**
  * Sanitize branch name for use in file system path.
@@ -59,10 +60,28 @@ export async function createCommand(): Promise<void> {
     });
   }
 
-  // Prompt for branch selection
+  // Prompt for branch selection with fuzzy search
   const selection = await Select.prompt({
-    message: 'Select branch for new worktree:',
+    message: 'Select branch for new worktree (type to search):',
     options,
+    search: true,
+    searchLabel: 'Search:',
+    searchIcon: '🔍',
+    // Custom search function using our fuzzy search
+    filter: (query: string) => {
+      if (query.length === 0) return options;
+
+      // Extract just the branch names for searching (skip separators and "Create new")
+      const searchableOptions = options
+        .filter((opt) => !opt.value.startsWith('__'))
+        .map((opt) => opt.value);
+
+      // Perform fuzzy search
+      const matches = fuzzySearch(query, searchableOptions);
+
+      // Return matched options
+      return options.filter((opt) => matches.includes(opt.value));
+    },
   });
 
   let targetBranch: string;
@@ -84,12 +103,23 @@ export async function createCommand(): Promise<void> {
       },
     });
 
+    const baseBranchOptions = [
+      ...branches.local.map((branch) => ({ name: `  ${branch}`, value: branch })),
+      ...branches.remote.map((branch) => ({ name: `  ${branch}`, value: branch })),
+    ];
+
     baseBranch = await Select.prompt({
-      message: 'Select base branch:',
-      options: [
-        ...branches.local.map((branch) => ({ name: `  ${branch}`, value: branch })),
-        ...branches.remote.map((branch) => ({ name: `  ${branch}`, value: branch })),
-      ],
+      message: 'Select base branch (type to search):',
+      options: baseBranchOptions,
+      search: true,
+      searchLabel: 'Search:',
+      searchIcon: '🔍',
+      filter: (query: string) => {
+        if (query.length === 0) return baseBranchOptions;
+        const allBranches = [...branches.local, ...branches.remote];
+        const matches = fuzzySearch(query, allBranches);
+        return baseBranchOptions.filter((opt) => matches.includes(opt.value));
+      },
     });
 
     targetBranch = baseBranch;
