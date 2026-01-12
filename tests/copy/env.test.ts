@@ -116,3 +116,35 @@ Deno.test('copyEnvFiles only copies files starting with .env', async () => {
     await tempRepo.cleanup();
   }
 });
+
+Deno.test('copyEnvFiles excludes .example files', async () => {
+  const tempRepo = await createTempGitRepo();
+
+  try {
+    // Create regular .env files
+    await Deno.writeTextFile(join(tempRepo.path, '.env'), 'KEY=value');
+    await Deno.writeTextFile(join(tempRepo.path, '.env.database'), 'DB=test');
+
+    // Create .example files that should be excluded
+    await Deno.writeTextFile(join(tempRepo.path, '.env.example'), 'EXAMPLE=1');
+    await Deno.writeTextFile(join(tempRepo.path, '.env.test.example'), 'TEST_EXAMPLE=1');
+
+    const destPath = await Deno.makeTempDir({ prefix: 'gwt-dest-' });
+
+    // Copy .env files
+    await copyEnvFiles(tempRepo.path, destPath);
+
+    // Verify regular .env files were copied
+    assert(await exists(join(destPath, '.env')));
+    assert(await exists(join(destPath, '.env.database')));
+
+    // Verify .example files were NOT copied
+    assertEquals(await exists(join(destPath, '.env.example')), false);
+    assertEquals(await exists(join(destPath, '.env.test.example')), false);
+
+    // Cleanup
+    await Deno.remove(destPath, { recursive: true });
+  } finally {
+    await tempRepo.cleanup();
+  }
+});
