@@ -18,7 +18,7 @@
 
 import { assertEquals, assert } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
-import { discoverFiles } from '../../src/copy/selector.ts';
+import { discoverFiles, selectFilesToCopyNonInteractive } from '../../src/copy/selector.ts';
 
 Deno.test('discoverFiles lists all files and directories including hidden', async () => {
   const tempRepo = await createTempGitRepo();
@@ -111,6 +111,64 @@ Deno.test('discoverFiles returns files sorted alphabetically', async () => {
     // Check that files are sorted (case-insensitive)
     const sortedNames = [...names].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
     assertEquals(names, sortedNames);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('selectFilesToCopyNonInteractive returns selected files', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create test files
+    await Deno.writeTextFile('.env', 'TEST=value');
+    await Deno.mkdir('.idea');
+    await Deno.mkdir('.vscode');
+
+    const files = await discoverFiles(tempRepo.path);
+    const selected = await selectFilesToCopyNonInteractive(files, ['.env', '.idea']);
+
+    assertEquals(selected, ['.env', '.idea']);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('selectFilesToCopyNonInteractive filters out invalid selections', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    const files = await discoverFiles(tempRepo.path);
+    const selected = await selectFilesToCopyNonInteractive(files, ['.env', 'nonexistent.txt']);
+
+    // Should only return valid selections
+    assertEquals(selected.includes('.env'), false); // .env doesn't exist in temp repo
+    assertEquals(selected.includes('nonexistent.txt'), false);
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('selectFilesToCopyNonInteractive handles empty selection', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    const files = await discoverFiles(tempRepo.path);
+    const selected = await selectFilesToCopyNonInteractive(files, []);
+
+    assertEquals(selected, []);
   } finally {
     Deno.chdir(originalCwd);
     await tempRepo.cleanup();

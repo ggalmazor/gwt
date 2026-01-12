@@ -16,6 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Checkbox } from '@cliffy/prompt';
+
 export interface FileEntry {
   name: string;
   isDirectory: boolean;
@@ -55,4 +57,49 @@ export async function discoverFiles(path: string): Promise<FileEntry[]> {
   entries.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
   return entries;
+}
+
+/**
+ * Select files to copy (non-interactive version for testing).
+ * Filters selections to only include files that exist in the available list.
+ *
+ * @param availableFiles - List of available files from discoverFiles()
+ * @param selections - Array of file names to select
+ * @returns Array of selected file names that exist in availableFiles
+ */
+export async function selectFilesToCopyNonInteractive(
+  availableFiles: FileEntry[],
+  selections: string[]
+): Promise<string[]> {
+  const availableNames = availableFiles.map(f => f.name);
+
+  // Filter to only include valid selections
+  return selections.filter(name => availableNames.includes(name));
+}
+
+/**
+ * Select files to copy interactively using a checkbox prompt.
+ * Shows all files with icons indicating type (file/directory).
+ * Supports fuzzy search to quickly find files.
+ *
+ * @param availableFiles - List of available files from discoverFiles()
+ * @returns Array of selected file names
+ */
+export async function selectFilesToCopy(availableFiles: FileEntry[]): Promise<string[]> {
+  if (availableFiles.length === 0) {
+    console.log('No files found in repository root.');
+    return [];
+  }
+
+  const selected = await Checkbox.prompt({
+    message: 'Select files/directories to copy (space to toggle, enter to confirm):',
+    options: availableFiles.map(f => ({
+      name: f.isDirectory ? `📁 ${f.name}` : `📄 ${f.name}`,
+      value: f.name,
+    })),
+    search: true,
+    hint: 'Type to search, space to select/deselect, enter to confirm',
+  });
+
+  return selected as string[];
 }
