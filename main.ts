@@ -22,6 +22,7 @@ import { createCommand } from './src/commands/create.ts';
 import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
 import { openCommand } from './src/commands/open.ts';
+import { cleanCommand } from './src/commands/clean.ts';
 
 const program = new Command()
   .name('gwt')
@@ -67,6 +68,16 @@ const program = new Command()
   .action(async () => {
     try {
       await openCommand();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
+      Deno.exit(1);
+    }
+  })
+  .command('clean', 'Remove orphaned worktree directories')
+  .action(async () => {
+    try {
+      await cleanCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
