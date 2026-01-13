@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Input, Select } from '@cliffy/prompt';
+import { Confirm, Input, Select } from '@cliffy/prompt';
 import type { EditorConfig, EditorType } from './types.ts';
 import { saveConfig } from './manager.ts';
 import { getRepoRoot } from '../git/repo.ts';
@@ -30,6 +30,7 @@ export interface WizardOptions {
   editorType: EditorType;
   editorCommand?: string;
   files: string[];
+  checkForUpdates?: boolean;
 }
 
 /**
@@ -46,6 +47,7 @@ export async function runConfigWizardNonInteractive(
   await saveConfig({
     editor,
     filesToCopy: options.files,
+    checkForUpdates: options.checkForUpdates,
   });
 }
 
@@ -73,13 +75,19 @@ export async function runConfigWizard(): Promise<void> {
     editorCommand = await promptCustomEditor();
   }
 
-  // Step 3: Select files to copy
+  // Step 3: Ask about update checking
+  const checkForUpdates = await Confirm.prompt({
+    message: 'Check for updates automatically? (once per day)',
+    default: true,
+  });
+
+  // Step 4: Select files to copy
   console.log('\nSelect files/directories to copy to new worktrees:');
   const repoRoot = await getRepoRoot();
   const availableFiles = await discoverFiles(repoRoot);
   const selectedFiles = await selectFilesToCopy(availableFiles);
 
-  // Step 4: Save configuration
+  // Step 5: Save configuration
   const editor: EditorConfig = {
     type: editorType as EditorType,
     command: editorCommand,
@@ -88,6 +96,7 @@ export async function runConfigWizard(): Promise<void> {
   await saveConfig({
     editor,
     filesToCopy: selectedFiles,
+    checkForUpdates,
   });
 
   console.log('\n✓ Configuration saved');

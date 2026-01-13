@@ -29,7 +29,7 @@ const CONFIG_FILE = 'config';
  * Get the path to the config file.
  * @returns the absolute path to the config file, or null if not in a git repo
  */
-async function getConfigPath(): Promise<string | null> {
+export async function getConfigPath(): Promise<string | null> {
   if (!(await isGitRepo())) {
     return null;
   }
@@ -68,11 +68,12 @@ export async function loadConfig(): Promise<Config | null> {
 
 /**
  * Save the configuration to .gwt/config (v2.0 format).
- * @param config - the config data to save (editor and filesToCopy)
+ * @param config - the config data to save (editor, filesToCopy, and checkForUpdates)
  */
 export async function saveConfig(config: {
   editor: EditorConfig;
   filesToCopy: string[];
+  checkForUpdates?: boolean;
 }): Promise<void> {
   const configPath = await getConfigPath();
 
@@ -91,6 +92,7 @@ export async function saveConfig(config: {
     version: '2.0',
     editor: config.editor,
     filesToCopy: config.filesToCopy,
+    checkForUpdates: config.checkForUpdates,
   };
 
   // Write config file

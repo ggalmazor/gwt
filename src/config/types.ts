@@ -34,4 +34,5 @@ export interface Config {
   version: string;
   editor: EditorConfig;
   filesToCopy: string[]; // File/directory names or glob patterns
+  checkForUpdates?: boolean; // Whether to check for updates (default: true)
 }

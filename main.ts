@@ -23,6 +23,59 @@ import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
 import { openCommand } from './src/commands/open.ts';
 import { cleanCommand } from './src/commands/clean.ts';
+import { loadConfig, getConfigPath } from './src/config/manager.ts';
+import {
+  checkForUpdates,
+  displayUpdateNotification,
+  needsUpdateCheck,
+  shouldCheckForUpdates,
+  touchFile,
+} from './src/utils/version-checker.ts';
+
+const CURRENT_VERSION = '1.2.0';
+
+/**
+ * Check for updates if enabled and needed.
+ */
+async function checkForUpdatesIfNeeded(): Promise<void> {
+  try {
+    const config = await loadConfig();
+    if (!config || !shouldCheckForUpdates(config)) {
+      return;
+    }
+
+    const configPath = await getConfigPath();
+    if (!configPath) {
+      return;
+    }
+
+    const needsCheck = await needsUpdateCheck(configPath);
+    if (!needsCheck) {
+      return;
+    }
+
+    const updateInfo = await checkForUpdates(CURRENT_VERSION);
+    if (updateInfo) {
+      displayUpdateNotification(updateInfo);
+    }
+  } catch {
+    // Silently ignore update check errors
+  }
+}
+
+/**
+ * Touch config file to update its modification time.
+ */
+async function touchConfigFile(): Promise<void> {
+  try {
+    const configPath = await getConfigPath();
+    if (configPath) {
+      await touchFile(configPath);
+    }
+  } catch {
+    // Silently ignore errors
+  }
+}
 
 const program = new Command()
   .name('gwt')
@@ -34,54 +87,69 @@ const program = new Command()
   .command('list', 'List all worktrees')
   .alias('ls')
   .action(async () => {
+    await checkForUpdatesIfNeeded();
     try {
       await listCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
       Deno.exit(1);
+    } finally {
+      await touchConfigFile();
     }
   })
   .command('create', 'Create a new worktree interactively')
   .alias('add')
   .action(async () => {
+    await checkForUpdatesIfNeeded();
     try {
       await createCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
       Deno.exit(1);
+    } finally {
+      await touchConfigFile();
     }
   })
   .command('delete [target:string]', 'Delete a worktree (interactive if no target)')
   .alias('remove')
   .action(async (_options, target?: string) => {
+    await checkForUpdatesIfNeeded();
     try {
       await deleteCommand(target);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
       Deno.exit(1);
+    } finally {
+      await touchConfigFile();
     }
   })
   .command('open', 'Open a worktree in your configured editor')
   .action(async () => {
+    await checkForUpdatesIfNeeded();
     try {
       await openCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
       Deno.exit(1);
+    } finally {
+      await touchConfigFile();
     }
   })
   .command('clean', 'Remove orphaned worktree directories')
   .action(async () => {
+    await checkForUpdatesIfNeeded();
     try {
       await cleanCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
       Deno.exit(1);
+    } finally {
+      await touchConfigFile();
     }
   })
   .command('config', configCommand);
