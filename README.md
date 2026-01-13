@@ -4,6 +4,8 @@
 
 A CLI tool to manage git worktrees with ease. Configure which files to copy and optionally launch your editor when creating new worktrees.
 
+![Demo](docs/demo.gif)
+
 ## Features
 
 - 🌳 **Interactive worktree creation** - Select branches with search, create new branches on the fly
