@@ -152,9 +152,12 @@ export async function deleteCommand(target?: string): Promise<void> {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    // Check if the error is due to uncommitted changes
-    if (errorMessage.includes('uncommitted changes')) {
-      console.log('\n⚠️  This worktree has uncommitted changes.');
+    // Check if the error is due to uncommitted changes or modified/untracked files
+    const hasUncommittedWork = errorMessage.includes('uncommitted changes') ||
+      errorMessage.includes('modified or untracked files');
+
+    if (hasUncommittedWork) {
+      console.log('\n⚠️  This worktree has uncommitted or untracked changes.');
       console.log('Deleting it will permanently lose those changes.\n');
 
       // Double confirmation for force deletion

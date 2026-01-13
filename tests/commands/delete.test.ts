@@ -153,3 +153,45 @@ Deno.test('deleteWorktreeWithForce removes worktree with uncommitted changes', a
     await tempRepo.cleanup();
   }
 });
+
+Deno.test('deleteWorktreeWithForce removes worktree with untracked files', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create a worktree
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    // Add an untracked file in the worktree
+    await Deno.writeTextFile(`${wtPath}/untracked.txt`, 'untracked file');
+
+    // Verify worktree exists
+    let worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 2);
+
+    // Try to delete without force (should fail)
+    await assertRejects(
+      () => deleteWorktreeNonInteractive('feature'),
+      Error,
+      'Failed to remove worktree',
+    );
+
+    // Verify worktree still exists
+    worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 2);
+
+    // Delete with force (should succeed)
+    await deleteWorktreeWithForce('feature');
+
+    // Verify worktree is removed
+    worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 1);
+    assert(worktrees[0].branch === 'main');
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
