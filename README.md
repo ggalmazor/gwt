@@ -10,9 +10,12 @@ A CLI tool to manage git worktrees with ease. Configure which files to copy and 
 
 - 🌳 **Interactive worktree creation** - Select branches with search, create new branches on the fly
 - 📋 **List all worktrees** - See all your worktrees in a clean table format
-- 🗑️ **Delete worktrees** - Remove worktrees interactively or by name
+- 🚀 **Open worktrees** - Quickly open existing worktrees in your editor
+- 🗑️ **Delete worktrees** - Remove worktrees interactively with force option for uncommitted changes
+- 🧹 **Clean orphaned directories** - Find and remove leftover worktree directories
 - 💡 **Editor integration** - Optionally launch any editor (VS Code, Vim, JetBrains IDEs, etc.)
 - 📁 **Configurable file copying** - Choose which files/directories to copy to new worktrees
+- 🔄 **Automatic update checking** - Get notified when new versions are available (once per day)
 - ⚙️ **Per-repository configuration** - Settings saved in `.gwt/config` and respected across worktrees
 
 ## Installation
@@ -87,6 +90,24 @@ gwt delete feature-branch
 gwt delete /path/to/worktree
 ```
 
+If a worktree has uncommitted or untracked changes, `gwt` will warn you and ask for double confirmation before force-deleting it.
+
+### Open a Worktree
+
+```bash
+gwt open
+```
+
+Interactively select an existing worktree to open in your configured editor. If no editor is configured, displays a `cd` command to navigate to the worktree.
+
+### Clean Orphaned Directories
+
+```bash
+gwt clean
+```
+
+Scans for and removes orphaned worktree directories (directories that look like worktrees but are no longer tracked by git). Useful for cleaning up after manual deletions or failed operations.
+
 ### Configure
 
 Configure GWT settings interactively.
@@ -103,7 +124,8 @@ The wizard will prompt you to:
 
 1. Choose editor type (none or custom command)
 2. Enter editor command (e.g., `code`, `vim`, `idea`, `/usr/bin/nvim`)
-3. Select files/directories to copy (with search support)
+3. Enable/disable automatic update checking
+4. Select files/directories to copy (with search support)
 
 ## How It Works
 
@@ -126,9 +148,12 @@ Configuration is stored in `.gwt/config` in your repository root:
     "type": "custom",
     "command": "idea"
   },
-  "filesToCopy": [".idea", ".env"]
+  "filesToCopy": [".idea", ".env"],
+  "checkForUpdates": true
 }
 ```
+
+- `checkForUpdates`: Whether to check for updates automatically (default: `true`, checks at most once per day)
 
 This file is git-ignored by default.
 
