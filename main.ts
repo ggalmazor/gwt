@@ -21,6 +21,7 @@ import { listCommand } from './src/commands/list.ts';
 import { createCommand } from './src/commands/create.ts';
 import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
+import { openCommand } from './src/commands/open.ts';
 
 const program = new Command()
   .name('gwt')
@@ -56,6 +57,16 @@ const program = new Command()
   .action(async (_options, target?: string) => {
     try {
       await deleteCommand(target);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
+      Deno.exit(1);
+    }
+  })
+  .command('open', 'Open a worktree in your configured editor')
+  .action(async () => {
+    try {
+      await openCommand();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
