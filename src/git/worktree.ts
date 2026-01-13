@@ -117,10 +117,19 @@ export async function addWorktree(
 /**
  * Remove a worktree.
  * @param path - the path to the worktree to remove
+ * @param force - force removal even with uncommitted changes
  */
-export async function removeWorktree(path: string): Promise<void> {
+export async function removeWorktree(path: string, force = false): Promise<void> {
+  const args = ['worktree', 'remove'];
+
+  if (force) {
+    args.push('--force');
+  }
+
+  args.push(path);
+
   const cmd = new Deno.Command('git', {
-    args: ['worktree', 'remove', path],
+    args,
     stdout: 'piped',
     stderr: 'piped',
   });

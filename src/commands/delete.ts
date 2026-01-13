@@ -24,8 +24,9 @@ import { NotInGitRepoError, WorktreeNotFoundError } from '../utils/errors.ts';
 /**
  * Delete a worktree non-interactively (for testing).
  * @param target - the path or branch name of the worktree to delete
+ * @param force - force removal even with uncommitted changes
  */
-export async function deleteWorktreeNonInteractive(target: string): Promise<void> {
+export async function deleteWorktreeNonInteractive(target: string, force = false): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
@@ -53,7 +54,15 @@ export async function deleteWorktreeNonInteractive(target: string): Promise<void
   }
 
   // Remove worktree
-  await removeWorktree(worktree.path);
+  await removeWorktree(worktree.path, force);
+}
+
+/**
+ * Delete a worktree with force flag (for testing).
+ * @param target - the path or branch name of the worktree to delete
+ */
+export async function deleteWorktreeWithForce(target: string): Promise<void> {
+  await deleteWorktreeNonInteractive(target, true);
 }
 
 /**
@@ -136,8 +145,35 @@ export async function deleteCommand(target?: string): Promise<void> {
     return;
   }
 
-  // Remove worktree
-  await removeWorktree(selectedWorktree.path);
+  // Try to remove worktree
+  try {
+    await removeWorktree(selectedWorktree.path);
+    console.log(`✓ Worktree deleted: ${selectedWorktree.path}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
-  console.log(`✓ Worktree deleted: ${selectedWorktree.path}`);
+    // Check if the error is due to uncommitted changes
+    if (errorMessage.includes('uncommitted changes')) {
+      console.log('\n⚠️  This worktree has uncommitted changes.');
+      console.log('Deleting it will permanently lose those changes.\n');
+
+      // Double confirmation for force deletion
+      const forceConfirmed = await Confirm.prompt({
+        message: 'Are you absolutely sure you want to force delete this worktree?',
+        default: false,
+      });
+
+      if (!forceConfirmed) {
+        console.log('Deletion cancelled.');
+        return;
+      }
+
+      // Retry with force
+      await removeWorktree(selectedWorktree.path, true);
+      console.log(`✓ Worktree forcefully deleted: ${selectedWorktree.path}`);
+    } else {
+      // Re-throw other errors
+      throw error;
+    }
+  }
 }
