@@ -26,7 +26,7 @@ import { cleanCommand } from './src/commands/clean.ts';
 
 const program = new Command()
   .name('gwt')
-  .version('1.1.2')
+  .version('1.2.0')
   .description('Git Worktree Manager - Manage git worktrees with ease')
   .action(function () {
     this.showHelp();
