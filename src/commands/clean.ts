@@ -162,20 +162,6 @@ export async function cleanCommand(): Promise<void> {
     return;
   }
 
-  // Confirm deletion
-  const confirmation = await Checkbox.prompt({
-    message: `Are you sure you want to delete ${selected.length} director${selected.length === 1 ? 'y' : 'ies'}? This cannot be undone. Select to confirm:`,
-    options: [
-      { name: `Yes, delete ${selected.length} director${selected.length === 1 ? 'y' : 'ies'}`, value: 'yes' },
-      { name: 'No, cancel', value: 'no' },
-    ],
-  });
-
-  if (!confirmation.includes('yes')) {
-    console.log('Operation cancelled.');
-    return;
-  }
-
   // Clean the selected directories
   console.log(`\nRemoving ${selected.length} director${selected.length === 1 ? 'y' : 'ies'}...`);
   await cleanOrphanedWorktreesNonInteractive(selected);
