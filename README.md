@@ -17,69 +17,42 @@ A CLI tool to manage git worktrees with ease. Configure which files to copy and 
 
 ## Installation
 
-### Quick Install (macOS/Linux)
+Available for macOS(Apple Silicon and Intel processors) and Linux(x86_64):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash
 ```
 
-### Manual Download
-
-Download the appropriate binary for your platform from [GitHub Releases](https://github.com/ggalmazor/gwt/releases/latest):
-
-- **macOS (Apple Silicon)**: `gwt-macos-arm64`
-- **macOS (Intel)**: `gwt-macos-x64`
-- **Linux (x86_64)**: `gwt-linux-x64`
-
-Then install:
-
-```bash
-# Make it executable
-chmod +x gwt-*
-
-# Move to a directory in your PATH
-sudo mv gwt-* /usr/local/bin/gwt
-
-# Or to your user bin directory
-mkdir -p ~/bin
-mv gwt-* ~/bin/gwt
-export PATH="$HOME/bin:$PATH"  # Add to your shell profile
-```
-
-### From Source (requires Deno)
-
-```bash
-git clone https://github.com/ggalmazor/gwt.git
-cd gwt
-deno task compile
-sudo mv gwt /usr/local/bin/
-```
-
 ## Usage
 
-### Create a New Worktree
+Run `gwt` without any arguments to see the available commands.
 
-```bash
-gwt create
-# or
-gwt add
+```shell
+Usage:   gwt  
+Version: 1.1.2
+
+Description:
+
+  Git Worktree Manager - Manage git worktrees with ease
+
+Options:
+
+  -h, --help     - Show this help.                            
+  -V, --version  - Show the version number for this program.  
+
+Commands:
+
+  list, ls                  - List all worktrees                          
+  create, add               - Create a new worktree interactively         
+  delete, remove  [target]  - Delete a worktree (interactive if no target)
+  open                      - Open a worktree in your configured editor   
+  clean                     - Remove orphaned worktree directories        
+  config                    - View or update configuration   
 ```
 
-On first use, `gwt` will run an interactive configuration wizard to set up:
-
-- Editor preference (none, or any command like `code`, `vim`, `idea`, etc.)
-- Files/directories to copy (select from your repository with search)
-
-After configuration, creating a worktree will:
-
-1. Show an interactive branch selector (type to search)
-2. Let you create a new branch if needed
-3. Prompt for the worktree path (with smart defaults)
-4. Create the worktree
-5. Copy your configured files/directories
-6. Launch your configured editor (if not set to "none")
-
 ### List Worktrees
+
+Shows all worktrees with their paths, branches, and commit hashes.
 
 ```bash
 gwt list
@@ -87,9 +60,21 @@ gwt list
 gwt ls
 ```
 
-Shows all worktrees with their paths, branches, and commit hashes.
+### Create a New Worktree
+
+Create a new worktree interactively.
+
+```bash
+gwt create
+# or
+gwt add
+```
+
+A wizard will guide you through the process.
 
 ### Delete a Worktree
+
+Delete an existing worktree.
 
 ```bash
 # Interactive selection
@@ -103,6 +88,8 @@ gwt delete /path/to/worktree
 ```
 
 ### Configure
+
+Configure GWT settings interactively.
 
 ```bash
 # View current configuration
@@ -150,21 +137,6 @@ This file is git-ignored by default.
 - Git 2.5+ (for worktree support)
 - macOS or Linux
 - Optional: Any editor installed for editor integration
-
-## Development
-
-Built with [Deno](https://deno.com/) and TypeScript.
-
-```bash
-# Run tests
-deno task test
-
-# Run in development mode
-deno task dev list
-
-# Compile binary
-deno task compile
-```
 
 ## License
 
