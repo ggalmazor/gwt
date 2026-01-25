@@ -1,6 +1,5 @@
 # Deno
 .deno/
-deno.lock
 
 # Compiled binaries
 /gwt
