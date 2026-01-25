@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { assert, assertEquals } from '@std/assert';
+import { assertEquals } from '@std/assert';
 import {
   compareVersions,
   needsUpdateCheck,
