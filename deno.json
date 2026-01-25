@@ -1,6 +1,6 @@
 {
   "name": "@gwt/cli",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "exports": "./main.ts",
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.7",
