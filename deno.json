@@ -19,7 +19,8 @@
     "compile:mac": "deno compile --target=aarch64-apple-darwin --allow-run --allow-read --allow-write --allow-env --output=dist/gwt-macos-arm64 main.ts",
     "compile:linux": "deno compile --target=x86_64-unknown-linux-gnu --allow-run --allow-read --allow-write --allow-env --output=dist/gwt-linux-x64 main.ts",
     "compile:windows": "deno compile --target=x86_64-pc-windows-msvc --allow-run --allow-read --allow-write --allow-env --output=dist/gwt-windows-x64.exe main.ts",
-    "install": "deno run --allow-read --allow-write --allow-run --allow-env scripts/install.ts"
+    "install": "deno run --allow-read --allow-write --allow-run --allow-env scripts/install.ts",
+    "release": "deno run --allow-read --allow-write --allow-run scripts/release.ts"
   },
   "lint": {
     "rules": {
