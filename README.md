@@ -50,7 +50,7 @@ Commands:
   delete, remove  [target]  - Delete a worktree (interactive if no target)
   open                      - Open a worktree in your configured editor   
   clean                     - Remove orphaned worktree directories        
-  config                    - View or update configuration   
+  config                    - View or update configuration
 ```
 
 ### List Worktrees

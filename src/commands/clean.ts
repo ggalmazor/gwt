@@ -146,7 +146,9 @@ export async function cleanCommand(): Promise<void> {
     return;
   }
 
-  console.log(`Found ${orphaned.length} potential orphaned director${orphaned.length === 1 ? 'y' : 'ies'}:\n`);
+  console.log(
+    `Found ${orphaned.length} potential orphaned director${orphaned.length === 1 ? 'y' : 'ies'}:\n`,
+  );
 
   // Prompt user to select which ones to clean
   const selected = await Checkbox.prompt({

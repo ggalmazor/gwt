@@ -127,13 +127,27 @@ export function displayUpdateNotification(updateInfo: UpdateInfo): void {
 
   console.log('');
   console.log('\x1b[33m┌────────────────────────────────────────────────────────────┐\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m');
-  console.log(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${updateInfo.currentVersion} → ${updateInfo.latestVersion}                      \x1b[33m│\x1b[0m`);
-  console.log('\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m  To update, run:                                          \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m    \x1b[36mcurl -fsSL https://raw.githubusercontent.com/\x1b[0m      \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m    \x1b[36mggalmazor/gwt/main/install.sh | bash\x1b[0m               \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m');
+  console.log(
+    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
+  );
+  console.log(
+    `\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${updateInfo.currentVersion} → ${updateInfo.latestVersion}                      \x1b[33m│\x1b[0m`,
+  );
+  console.log(
+    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
+  );
+  console.log(
+    '\x1b[33m│\x1b[0m  To update, run:                                          \x1b[33m│\x1b[0m',
+  );
+  console.log(
+    '\x1b[33m│\x1b[0m    \x1b[36mcurl -fsSL https://raw.githubusercontent.com/\x1b[0m      \x1b[33m│\x1b[0m',
+  );
+  console.log(
+    '\x1b[33m│\x1b[0m    \x1b[36mggalmazor/gwt/main/install.sh | bash\x1b[0m               \x1b[33m│\x1b[0m',
+  );
+  console.log(
+    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
+  );
   console.log('\x1b[33m└────────────────────────────────────────────────────────────┘\x1b[0m');
   console.log('');
 }

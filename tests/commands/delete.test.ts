@@ -1,6 +1,9 @@
 import { assert, assertEquals, assertRejects } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
-import { deleteWorktreeNonInteractive, deleteWorktreeWithForce } from '../../src/commands/delete.ts';
+import {
+  deleteWorktreeNonInteractive,
+  deleteWorktreeWithForce,
+} from '../../src/commands/delete.ts';
 import { addWorktree, listWorktrees } from '../../src/git/worktree.ts';
 import { WorktreeNotFoundError } from '../../src/utils/errors.ts';
 

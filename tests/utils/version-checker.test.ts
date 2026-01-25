@@ -17,7 +17,11 @@
  */
 
 import { assert, assertEquals } from '@std/assert';
-import { compareVersions, needsUpdateCheck, shouldCheckForUpdates } from '../../src/utils/version-checker.ts';
+import {
+  compareVersions,
+  needsUpdateCheck,
+  shouldCheckForUpdates,
+} from '../../src/utils/version-checker.ts';
 
 Deno.test('compareVersions returns 1 when remote is newer', () => {
   assertEquals(compareVersions('1.0.0', '1.1.0'), 1);
@@ -72,12 +76,22 @@ Deno.test('needsUpdateCheck returns false for recently updated config', async ()
 });
 
 Deno.test('shouldCheckForUpdates returns false when config disables it', () => {
-  const config = { version: '2.0', editor: { type: 'none' as const }, filesToCopy: [], checkForUpdates: false };
+  const config = {
+    version: '2.0',
+    editor: { type: 'none' as const },
+    filesToCopy: [],
+    checkForUpdates: false,
+  };
   assertEquals(shouldCheckForUpdates(config), false);
 });
 
 Deno.test('shouldCheckForUpdates returns true when config enables it', () => {
-  const config = { version: '2.0', editor: { type: 'none' as const }, filesToCopy: [], checkForUpdates: true };
+  const config = {
+    version: '2.0',
+    editor: { type: 'none' as const },
+    filesToCopy: [],
+    checkForUpdates: true,
+  };
   assertEquals(shouldCheckForUpdates(config), true);
 });
 

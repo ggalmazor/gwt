@@ -23,7 +23,7 @@ import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
 import { openCommand } from './src/commands/open.ts';
 import { cleanCommand } from './src/commands/clean.ts';
-import { loadConfig, getConfigPath } from './src/config/manager.ts';
+import { getConfigPath, loadConfig } from './src/config/manager.ts';
 import {
   checkForUpdates,
   displayUpdateNotification,
