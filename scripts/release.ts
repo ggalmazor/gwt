@@ -8,10 +8,12 @@
  *
  * This script:
  * 1. Computes the next semver version based on release type
- * 2. Asks for confirmation (including CHANGELOG update check)
- * 3. Updates src/version.ts and deno.json
- * 4. Creates a git commit and tag
- * 5. Asks for confirmation before pushing
+ * 2. Checks for uncommitted changes
+ * 3. Runs lint and tests to ensure code quality
+ * 4. Asks for confirmation (including CHANGELOG update check)
+ * 5. Updates src/version.ts and deno.json
+ * 6. Creates a git commit and tag
+ * 7. Asks for confirmation before pushing
  */
 
 import { VERSION } from '../src/version.ts';
@@ -67,6 +69,17 @@ async function run(cmd: string[], options?: { cwd?: string }): Promise<{ success
   const { success, stdout, stderr } = await command.output();
   const output = new TextDecoder().decode(success ? stdout : stderr);
   return { success, output };
+}
+
+async function runWithOutput(cmd: string[]): Promise<boolean> {
+  const command = new Deno.Command(cmd[0], {
+    args: cmd.slice(1),
+    stdout: 'inherit',
+    stderr: 'inherit',
+  });
+
+  const { success } = await command.output();
+  return success;
 }
 
 async function updateVersionFile(newVersion: string): Promise<void> {
@@ -133,6 +146,35 @@ async function main(): Promise<void> {
       Deno.exit(0);
     }
   }
+
+  // Run lint
+  console.log('Running lint...');
+  console.log('');
+  const lintSuccess = await runWithOutput(['deno', 'lint']);
+  if (!lintSuccess) {
+    console.error('');
+    console.error('Error: Lint failed. Please fix the issues before releasing.');
+    Deno.exit(1);
+  }
+  console.log('');
+
+  // Run tests
+  console.log('Running tests...');
+  console.log('');
+  const testSuccess = await runWithOutput([
+    'deno',
+    'test',
+    '--allow-run',
+    '--allow-read',
+    '--allow-write',
+    '--allow-env',
+  ]);
+  if (!testSuccess) {
+    console.error('');
+    console.error('Error: Tests failed. Please fix the issues before releasing.');
+    Deno.exit(1);
+  }
+  console.log('');
 
   // Ask about CHANGELOG
   console.log('Before releasing, please ensure:');
