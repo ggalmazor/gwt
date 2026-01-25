@@ -31,8 +31,7 @@ import {
   shouldCheckForUpdates,
   touchFile,
 } from './src/utils/version-checker.ts';
-
-const CURRENT_VERSION = '1.2.0';
+import { VERSION } from './src/version.ts';
 
 /**
  * Check for updates if enabled and needed.
@@ -54,7 +53,7 @@ async function checkForUpdatesIfNeeded(): Promise<void> {
       return;
     }
 
-    const updateInfo = await checkForUpdates(CURRENT_VERSION);
+    const updateInfo = await checkForUpdates(VERSION);
     if (updateInfo) {
       displayUpdateNotification(updateInfo);
     }
@@ -79,7 +78,7 @@ async function touchConfigFile(): Promise<void> {
 
 const program = new Command()
   .name('gwt')
-  .version('1.2.0')
+  .version(VERSION)
   .description('Git Worktree Manager - Manage git worktrees with ease')
   .action(function () {
     this.showHelp();
