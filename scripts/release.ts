@@ -58,7 +58,10 @@ async function confirm(message: string): Promise<boolean> {
   return answer.toLowerCase() === 'y';
 }
 
-async function run(cmd: string[], options?: { cwd?: string }): Promise<{ success: boolean; output: string }> {
+async function run(
+  cmd: string[],
+  options?: { cwd?: string },
+): Promise<{ success: boolean; output: string }> {
   const command = new Deno.Command(cmd[0], {
     args: cmd.slice(1),
     cwd: options?.cwd,
