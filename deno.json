@@ -1,6 +1,6 @@
 {
   "name": "@gwt/cli",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "exports": "./main.ts",
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0-rc.7",
@@ -24,7 +24,9 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"]
+      "tags": [
+        "recommended"
+      ]
     }
   },
   "fmt": {
