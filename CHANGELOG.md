@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-09
+
+### Changed
+
+- `gwt delete` now supports multi-select when no target is provided, allowing deletion of multiple worktrees at once
+
 ## [1.2.4] - 2025-01-24
 
 - Housekeeping: run ci and lint before release
@@ -80,7 +86,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Per-repository configuration stored in `.gwt/config`
 - Configurable file copying to new worktrees
 
-[Unreleased]: https://github.com/ggalmazor/gwt/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/ggalmazor/gwt/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ggalmazor/gwt/compare/v1.2.4...v1.3.0
+[1.2.4]: https://github.com/ggalmazor/gwt/compare/v1.2.3...v1.2.4
+[1.2.3]: https://github.com/ggalmazor/gwt/compare/v1.2.2...v1.2.3
 [1.2.2]: https://github.com/ggalmazor/gwt/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/ggalmazor/gwt/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/ggalmazor/gwt/compare/v1.1.2...v1.2.0
