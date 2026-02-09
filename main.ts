@@ -111,7 +111,7 @@ const program = new Command()
       await touchConfigFile();
     }
   })
-  .command('delete [target:string]', 'Delete a worktree (interactive if no target)')
+  .command('delete [target:string]', 'Delete one or more worktrees (multi-select if no target)')
   .alias('remove')
   .action(async (_options, target?: string) => {
     await checkForUpdatesIfNeeded();

@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Confirm, Select } from '@cliffy/prompt';
+import { Checkbox, Confirm } from '@cliffy/prompt';
 import { listWorktrees, removeWorktree } from '../git/worktree.ts';
 import { getRepoRoot, isGitRepo } from '../git/repo.ts';
 import { NotInGitRepoError, WorktreeNotFoundError } from '../utils/errors.ts';
@@ -106,9 +106,8 @@ export async function deleteCommand(target?: string): Promise<void> {
     return;
   }
 
-  let selectedWorktree;
-
   if (target) {
+    // Single target provided via CLI argument
     // Resolve target path if it exists (handle symlinks)
     let resolvedTarget = target;
     try {
@@ -121,7 +120,9 @@ export async function deleteCommand(target?: string): Promise<void> {
     }
 
     // Find worktree by path or branch name
-    selectedWorktree = worktrees.find((wt) => wt.path === resolvedTarget || wt.branch === target);
+    const selectedWorktree = worktrees.find(
+      (wt) => wt.path === resolvedTarget || wt.branch === target,
+    );
 
     if (!selectedWorktree) {
       throw new WorktreeNotFoundError(target);
@@ -131,38 +132,66 @@ export async function deleteCommand(target?: string): Promise<void> {
     if (selectedWorktree.path === repoRoot) {
       throw new Error('Cannot delete the main worktree');
     }
+
+    // Show confirmation prompt
+    const confirmed = await Confirm.prompt({
+      message: `Delete worktree at ${selectedWorktree.path} (branch: ${selectedWorktree.branch})?`,
+      default: false,
+    });
+
+    if (!confirmed) {
+      console.log('Deletion cancelled.');
+      return;
+    }
+
+    await deleteWorktreeInteractive(selectedWorktree.path);
   } else {
-    // Interactive selection
-    const selection = await Select.prompt({
-      message: 'Select worktree to delete:',
+    // Interactive multi-select
+    const selectedPaths = await Checkbox.prompt({
+      message: 'Select worktrees to delete (space to toggle, enter to confirm):',
       options: linkedWorktrees.map((wt) => ({
         name: `${wt.branch} (${wt.path})`,
         value: wt.path,
       })),
     });
 
-    selectedWorktree = worktrees.find((wt) => wt.path === selection);
+    if (selectedPaths.length === 0) {
+      console.log('No worktrees selected.');
+      return;
+    }
 
-    if (!selectedWorktree) {
-      throw new Error('Selected worktree not found');
+    const selectedWorktrees = worktrees.filter((wt) => selectedPaths.includes(wt.path));
+
+    // Show confirmation listing all selected worktrees
+    const listing = selectedWorktrees
+      .map((wt) => `  - ${wt.branch} (${wt.path})`)
+      .join('\n');
+    console.log(`\nWorktrees to delete:\n${listing}\n`);
+
+    const confirmed = await Confirm.prompt({
+      message: `Delete ${selectedWorktrees.length} worktree${selectedWorktrees.length > 1 ? 's' : ''}?`,
+      default: false,
+    });
+
+    if (!confirmed) {
+      console.log('Deletion cancelled.');
+      return;
+    }
+
+    // Delete each selected worktree in sequence
+    for (const wt of selectedWorktrees) {
+      await deleteWorktreeInteractive(wt.path);
     }
   }
+}
 
-  // Show confirmation prompt
-  const confirmed = await Confirm.prompt({
-    message: `Delete worktree at ${selectedWorktree.path} (branch: ${selectedWorktree.branch})?`,
-    default: false,
-  });
-
-  if (!confirmed) {
-    console.log('Deletion cancelled.');
-    return;
-  }
-
-  // Try to remove worktree
+/**
+ * Delete a single worktree interactively, handling force-delete prompts.
+ */
+async function deleteWorktreeInteractive(path: string): Promise<void> {
   try {
-    await removeWorktree(selectedWorktree.path);
-    console.log(`✓ Worktree deleted: ${selectedWorktree.path}`);
+    await removeWorktree(path);
+    console.log(`✓ Worktree deleted: ${path}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -171,23 +200,23 @@ export async function deleteCommand(target?: string): Promise<void> {
       errorMessage.includes('modified or untracked files');
 
     if (hasUncommittedWork) {
-      console.log('\n⚠️  This worktree has uncommitted or untracked changes.');
+      console.log(`\n⚠️  Worktree at ${path} has uncommitted or untracked changes.`);
       console.log('Deleting it will permanently lose those changes.\n');
 
       // Double confirmation for force deletion
       const forceConfirmed = await Confirm.prompt({
-        message: 'Are you absolutely sure you want to force delete this worktree?',
+        message: `Are you absolutely sure you want to force delete ${path}?`,
         default: false,
       });
 
       if (!forceConfirmed) {
-        console.log('Deletion cancelled.');
+        console.log('Skipped.');
         return;
       }
 
       // Retry with force
-      await removeWorktree(selectedWorktree.path, true);
-      console.log(`✓ Worktree forcefully deleted: ${selectedWorktree.path}`);
+      await removeWorktree(path, true);
+      console.log(`✓ Worktree forcefully deleted: ${path}`);
     } else {
       // Re-throw other errors
       throw error;
