@@ -2,4 +2,4 @@
  * Central version management for gwt.
  * This is the single source of truth for the application version.
  */
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
