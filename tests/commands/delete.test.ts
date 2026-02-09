@@ -1,6 +1,7 @@
 import { assert, assertEquals, assertRejects } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import {
+  deleteMultipleWorktreesNonInteractive,
   deleteWorktreeNonInteractive,
   deleteWorktreeWithForce,
 } from '../../src/commands/delete.ts';
@@ -190,6 +191,72 @@ Deno.test('deleteWorktreeWithForce removes worktree with untracked files', async
     await deleteWorktreeWithForce('feature');
 
     // Verify worktree is removed
+    worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 1);
+    assert(worktrees[0].branch === 'main');
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('deleteMultipleWorktreesNonInteractive deletes multiple worktrees', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create multiple worktrees
+    const wtPath1 = await Deno.makeTempDir({ prefix: 'gwt-wt-1-' });
+    const wtPath2 = await Deno.makeTempDir({ prefix: 'gwt-wt-2-' });
+    const wtPath3 = await Deno.makeTempDir({ prefix: 'gwt-wt-3-' });
+    await addWorktree(wtPath1, 'main', 'feature-1');
+    await addWorktree(wtPath2, 'main', 'feature-2');
+    await addWorktree(wtPath3, 'main', 'feature-3');
+
+    // Verify all exist
+    let worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 4);
+
+    // Delete two at once
+    await deleteMultipleWorktreesNonInteractive(['feature-1', 'feature-3']);
+
+    // Verify only feature-2 and main remain
+    worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 2);
+    assert(worktrees.some((wt) => wt.branch === 'main'));
+    assert(worktrees.some((wt) => wt.branch === 'feature-2'));
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('deleteMultipleWorktreesNonInteractive handles partial failures with force', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create two worktrees
+    const wtPath1 = await Deno.makeTempDir({ prefix: 'gwt-wt-1-' });
+    const wtPath2 = await Deno.makeTempDir({ prefix: 'gwt-wt-2-' });
+    await addWorktree(wtPath1, 'main', 'clean-branch');
+    await addWorktree(wtPath2, 'main', 'dirty-branch');
+
+    // Make uncommitted changes in the dirty worktree
+    await Deno.writeTextFile(`${wtPath2}/uncommitted.txt`, 'uncommitted change');
+
+    // Verify both exist
+    let worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 3);
+
+    // Delete both with force - clean one deleted normally, dirty one force-deleted
+    await deleteMultipleWorktreesNonInteractive(['clean-branch', 'dirty-branch'], true);
+
+    // Verify both are removed
     worktrees = await listWorktrees();
     assertEquals(worktrees.length, 1);
     assert(worktrees[0].branch === 'main');

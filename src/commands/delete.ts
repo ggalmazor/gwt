@@ -66,6 +66,20 @@ export async function deleteWorktreeWithForce(target: string): Promise<void> {
 }
 
 /**
+ * Delete multiple worktrees non-interactively (for testing).
+ * @param targets - array of paths or branch names of worktrees to delete
+ * @param force - force removal even with uncommitted changes
+ */
+export async function deleteMultipleWorktreesNonInteractive(
+  targets: string[],
+  force = false,
+): Promise<void> {
+  for (const target of targets) {
+    await deleteWorktreeNonInteractive(target, force);
+  }
+}
+
+/**
  * Delete a worktree interactively.
  * If target is provided, delete that worktree (with confirmation).
  * If no target is provided, show a selection prompt.
