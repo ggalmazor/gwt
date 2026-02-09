@@ -18,7 +18,7 @@
 
 import { Command } from '@cliffy/command';
 import { listCommand } from './src/commands/list.ts';
-import { createCommand } from './src/commands/create.ts';
+import { createCommand, createWorktreeNonInteractive } from './src/commands/create.ts';
 import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
 import { openCommand } from './src/commands/open.ts';
@@ -97,12 +97,27 @@ const program = new Command()
       await touchConfigFile();
     }
   })
-  .command('create', 'Create a new worktree interactively')
+  .command('create', 'Create a new worktree')
   .alias('add')
-  .action(async () => {
+  .option('--branch <branch:string>', 'Existing branch to check out')
+  .option('--new-branch <newBranch:string>', 'Create a new branch')
+  .option('--base <base:string>', 'Base branch for the new branch')
+  .option('--path <path:string>', 'Worktree path')
+  .option('--no-editor', 'Skip editor launch')
+  .action(async (options) => {
     await checkForUpdatesIfNeeded();
     try {
-      await createCommand();
+      if (options.path && (options.branch || options.newBranch)) {
+        await createWorktreeNonInteractive({
+          branch: options.branch,
+          path: options.path,
+          newBranch: options.newBranch,
+          base: options.base,
+          noEditor: options.editor === false,
+        });
+      } else {
+        await createCommand();
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
@@ -113,10 +128,11 @@ const program = new Command()
   })
   .command('delete [target:string]', 'Delete one or more worktrees (multi-select if no target)')
   .alias('remove')
-  .action(async (_options, target?: string) => {
+  .option('--force', 'Skip confirmation prompt')
+  .action(async (options, target?: string) => {
     await checkForUpdatesIfNeeded();
     try {
-      await deleteCommand(target);
+      await deleteCommand(target, { force: options.force });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
@@ -125,11 +141,11 @@ const program = new Command()
       await touchConfigFile();
     }
   })
-  .command('open', 'Open a worktree in your configured editor')
-  .action(async () => {
+  .command('open [target:string]', 'Open a worktree in your configured editor')
+  .action(async (_options, target?: string) => {
     await checkForUpdatesIfNeeded();
     try {
-      await openCommand();
+      await openCommand(target);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);
@@ -139,10 +155,11 @@ const program = new Command()
     }
   })
   .command('clean', 'Remove orphaned worktree directories')
-  .action(async () => {
+  .option('--all', 'Clean all orphaned directories without prompting')
+  .action(async (options) => {
     await checkForUpdatesIfNeeded();
     try {
-      await cleanCommand();
+      await cleanCommand({ all: options.all });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`Error: ${message}`);

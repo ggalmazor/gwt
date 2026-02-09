@@ -85,7 +85,7 @@ export async function deleteMultipleWorktreesNonInteractive(
  * If no target is provided, show a selection prompt.
  * @param target - optional path or branch name of the worktree to delete
  */
-export async function deleteCommand(target?: string): Promise<void> {
+export async function deleteCommand(target?: string, options?: { force?: boolean }): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
@@ -133,6 +133,13 @@ export async function deleteCommand(target?: string): Promise<void> {
       throw new Error('Cannot delete the main worktree');
     }
 
+    if (options?.force) {
+      // Skip confirmation, delete directly (with force for uncommitted changes)
+      await removeWorktree(selectedWorktree.path, true);
+      console.log(`✓ Worktree deleted: ${selectedWorktree.path}`);
+      return;
+    }
+
     // Show confirmation prompt
     const confirmed = await Confirm.prompt({
       message: `Delete worktree at ${selectedWorktree.path} (branch: ${selectedWorktree.branch})?`,
@@ -169,7 +176,9 @@ export async function deleteCommand(target?: string): Promise<void> {
     console.log(`\nWorktrees to delete:\n${listing}\n`);
 
     const confirmed = await Confirm.prompt({
-      message: `Delete ${selectedWorktrees.length} worktree${selectedWorktrees.length > 1 ? 's' : ''}?`,
+      message: `Delete ${selectedWorktrees.length} worktree${
+        selectedWorktrees.length > 1 ? 's' : ''
+      }?`,
       default: false,
     });
 

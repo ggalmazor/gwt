@@ -9,6 +9,7 @@ A CLI tool to manage git worktrees with ease. Configure which files to copy and 
 ## Features
 
 - 🌳 **Interactive worktree creation** - Select branches with search, create new branches on the fly
+- 🤖 **Non-interactive mode** - All commands support CLI flags for scripting and automation
 - 📋 **List all worktrees** - See all your worktrees in a clean table format
 - 🚀 **Open worktrees** - Quickly open existing worktrees in your editor
 - 🗑️ **Delete worktrees** - Remove worktrees interactively with force option for uncommitted changes
@@ -32,7 +33,7 @@ Run `gwt` without any arguments to see the available commands.
 
 ```shell
 Usage:   gwt  
-Version: 1.1.2
+Version: 1.4.0
 
 Description:
 
@@ -65,29 +66,41 @@ gwt ls
 
 ### Create a New Worktree
 
-Create a new worktree interactively.
+Create a new worktree interactively or via CLI flags.
 
 ```bash
+# Interactive (wizard guides you through)
 gwt create
-# or
-gwt add
-```
 
-A wizard will guide you through the process.
+# Non-interactive: existing branch (path computed automatically)
+gwt create --branch feature-branch
+
+# Non-interactive: with explicit path
+gwt create --branch feature-branch --path ../my-project-feature-branch
+
+# Non-interactive: create a new branch from a base
+gwt create --new-branch my-feature --base main
+
+# Skip editor launch
+gwt create --branch feature-branch --no-editor
+```
 
 ### Delete a Worktree
 
 Delete an existing worktree.
 
 ```bash
-# Interactive selection
+# Interactive multi-select
 gwt delete
 
-# Delete by branch name
+# Delete by branch name (with confirmation prompt)
 gwt delete feature-branch
 
-# Delete by path
+# Delete by path (with confirmation prompt)
 gwt delete /path/to/worktree
+
+# Skip confirmation (for scripts)
+gwt delete feature-branch --force
 ```
 
 If a worktree has uncommitted or untracked changes, `gwt` will warn you and ask for double confirmation before force-deleting it.
@@ -95,15 +108,24 @@ If a worktree has uncommitted or untracked changes, `gwt` will warn you and ask 
 ### Open a Worktree
 
 ```bash
+# Interactive selection
 gwt open
+
+# Open by branch name or path
+gwt open feature-branch
+gwt open /path/to/worktree
 ```
 
-Interactively select an existing worktree to open in your configured editor. If no editor is configured, displays a `cd` command to navigate to the worktree.
+Interactively select an existing worktree to open in your configured editor, or pass a target directly. If no editor is configured, displays a `cd` command to navigate to the worktree.
 
 ### Clean Orphaned Directories
 
 ```bash
+# Interactive selection
 gwt clean
+
+# Remove all orphaned directories without prompting
+gwt clean --all
 ```
 
 Scans for and removes orphaned worktree directories (directories that look like worktrees but are no longer tracked by git). Useful for cleaning up after manual deletions or failed operations.

@@ -78,13 +78,37 @@ export async function openCommandNonInteractive(worktreePath: string): Promise<v
 /**
  * Interactive command to open a worktree.
  */
-export async function openCommand(): Promise<void> {
+export async function openCommand(target?: string): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
   }
 
-  // Get all worktrees
+  if (target) {
+    // Non-interactive: resolve target by path or branch name
+    const worktrees = await listWorktrees();
+
+    // Try resolving as a path first
+    let resolvedTarget = target;
+    try {
+      const stat = await Deno.stat(target);
+      if (stat.isDirectory) {
+        resolvedTarget = await Deno.realPath(target);
+      }
+    } catch {
+      // Not a path, might be a branch name
+    }
+
+    const worktree = worktrees.find((wt) => wt.path === resolvedTarget || wt.branch === target);
+    if (worktree) {
+      await openCommandNonInteractive(worktree.path);
+      return;
+    }
+
+    throw new Error(`Worktree not found: ${target}`);
+  }
+
+  // Interactive flow
   const worktrees = await listWorktrees();
 
   if (worktrees.length === 0) {
@@ -92,19 +116,16 @@ export async function openCommand(): Promise<void> {
     return;
   }
 
-  // Build selection options
   const options = worktrees.map((wt) => ({
     name: `${wt.branch} (${wt.path})`,
     value: wt.path,
   }));
 
-  // Prompt for worktree selection
   const selectedPath = await Select.prompt({
     message: 'Select worktree to open:',
     options,
     search: true,
   });
 
-  // Open the selected worktree
   await openCommandNonInteractive(selectedPath);
 }

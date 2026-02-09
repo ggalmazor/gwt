@@ -18,7 +18,7 @@
 
 import { assert, assertEquals, assertRejects } from '@std/assert';
 import { exists } from '@std/fs';
-import { cleanOrphanedWorktreesNonInteractive } from '../../src/commands/clean.ts';
+import { cleanCommand, cleanOrphanedWorktreesNonInteractive } from '../../src/commands/clean.ts';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import { NotInGitRepoError } from '../../src/utils/errors.ts';
 import { addWorktree } from '../../src/git/worktree.ts';
@@ -101,6 +101,39 @@ Deno.test('cleanOrphanedWorktreesNonInteractive handles empty selection', async 
 
     // If we get here, it succeeded
     assertEquals(true, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('cleanCommand with --all removes all orphaned directories without prompting', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    // Create orphaned directories that match the repo name pattern
+    const repoName = repo.path.split('/').pop()!;
+    const parentDir = repo.path.replace(/\/[^/]+$/, '');
+    const orphanedPath1 = `${parentDir}/${repoName}-orphan1`;
+    const orphanedPath2 = `${parentDir}/${repoName}-orphan2`;
+
+    await Deno.mkdir(orphanedPath1);
+    await Deno.writeTextFile(`${orphanedPath1}/.git`, 'gitdir: /fake/path');
+    await Deno.mkdir(orphanedPath2);
+    await Deno.writeTextFile(`${orphanedPath2}/.git`, 'gitdir: /fake/path');
+
+    assert(await exists(orphanedPath1));
+    assert(await exists(orphanedPath2));
+
+    // Clean all (non-interactive)
+    await cleanCommand({ all: true });
+
+    // Verify both are removed
+    assert(!(await exists(orphanedPath1)));
+    assert(!(await exists(orphanedPath2)));
   } finally {
     Deno.chdir(originalCwd);
     await repo.cleanup();

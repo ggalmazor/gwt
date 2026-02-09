@@ -131,7 +131,12 @@ export async function cleanOrphanedWorktreesNonInteractive(
 /**
  * Interactive command to clean orphaned worktree directories.
  */
-export async function cleanCommand(): Promise<void> {
+/**
+ * Find orphaned directories (exported for non-interactive use).
+ */
+export { findOrphanedDirectories };
+
+export async function cleanCommand(options?: { all?: boolean }): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
@@ -149,6 +154,14 @@ export async function cleanCommand(): Promise<void> {
   console.log(
     `Found ${orphaned.length} potential orphaned director${orphaned.length === 1 ? 'y' : 'ies'}:\n`,
   );
+
+  if (options?.all) {
+    // Non-interactive: clean all orphaned directories
+    console.log(`\nRemoving ${orphaned.length} director${orphaned.length === 1 ? 'y' : 'ies'}...`);
+    await cleanOrphanedWorktreesNonInteractive(orphaned);
+    console.log('\n✓ Cleanup complete');
+    return;
+  }
 
   // Prompt user to select which ones to clean
   const selected = await Checkbox.prompt({

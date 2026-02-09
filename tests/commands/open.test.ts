@@ -17,7 +17,7 @@
  */
 
 import { assertEquals, assertRejects } from '@std/assert';
-import { openCommandNonInteractive } from '../../src/commands/open.ts';
+import { openCommand, openCommandNonInteractive } from '../../src/commands/open.ts';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import { NotInGitRepoError } from '../../src/utils/errors.ts';
 import { saveConfig } from '../../src/config/manager.ts';
@@ -112,6 +112,79 @@ Deno.test('openCommandNonInteractive throws error when worktree path does not ex
       () => openCommandNonInteractive('/non/existent/path'),
       Error,
       'Path does not exist',
+    );
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('openCommand with target opens worktree by branch name', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    await saveConfig({
+      editor: { type: 'custom', command: 'echo' },
+      filesToCopy: [],
+    });
+
+    // Open by branch name (non-interactive)
+    await openCommand('feature');
+
+    assertEquals(true, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('openCommand with target opens worktree by path', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    await saveConfig({
+      editor: { type: 'custom', command: 'echo' },
+      filesToCopy: [],
+    });
+
+    // Open by path (non-interactive)
+    await openCommand(wtPath);
+
+    assertEquals(true, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('openCommand with invalid target throws error', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    await saveConfig({
+      editor: { type: 'none' },
+      filesToCopy: [],
+    });
+
+    await assertRejects(
+      () => openCommand('nonexistent-branch'),
+      Error,
+      'Worktree not found',
     );
   } finally {
     Deno.chdir(originalCwd);

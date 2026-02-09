@@ -1,6 +1,7 @@
 import { assert, assertEquals, assertRejects } from '@std/assert';
 import { createTempGitRepo } from '../helpers/git-test-repo.ts';
 import {
+  deleteCommand,
   deleteMultipleWorktreesNonInteractive,
   deleteWorktreeNonInteractive,
   deleteWorktreeWithForce,
@@ -258,6 +259,60 @@ Deno.test('deleteMultipleWorktreesNonInteractive handles partial failures with f
 
     // Verify both are removed
     worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 1);
+    assert(worktrees[0].branch === 'main');
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('deleteCommand with target and --force skips confirmation', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create a worktree
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    // Verify worktree exists
+    let worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 2);
+
+    // Delete with --force (no confirmation prompt)
+    await deleteCommand('feature', { force: true });
+
+    // Verify worktree is removed
+    worktrees = await listWorktrees();
+    assertEquals(worktrees.length, 1);
+    assert(worktrees[0].branch === 'main');
+  } finally {
+    Deno.chdir(originalCwd);
+    await tempRepo.cleanup();
+  }
+});
+
+Deno.test('deleteCommand with target and --force handles uncommitted changes', async () => {
+  const tempRepo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(tempRepo.path);
+
+    // Create a worktree
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    // Make uncommitted changes
+    await Deno.writeTextFile(`${wtPath}/uncommitted.txt`, 'dirty');
+
+    // Delete with --force should succeed even with uncommitted changes
+    await deleteCommand('feature', { force: true });
+
+    const worktrees = await listWorktrees();
     assertEquals(worktrees.length, 1);
     assert(worktrees[0].branch === 'main');
   } finally {

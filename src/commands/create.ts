@@ -32,8 +32,73 @@ import { NotInGitRepoError } from '../utils/errors.ts';
  * Sanitize branch name for use in file system path.
  * Replace / with - and remove other problematic characters.
  */
-function sanitizeBranchName(branch: string): string {
+export function sanitizeBranchName(branch: string): string {
   return branch.replace(/\//g, '-').replace(/[^\w.-]/g, '');
+}
+
+/**
+ * Options for non-interactive worktree creation.
+ */
+export interface CreateWorktreeOptions {
+  /** Existing branch to check out */
+  branch?: string;
+  /** Path for the new worktree (computed from repo name + branch if omitted) */
+  path?: string;
+  /** New branch name to create */
+  newBranch?: string;
+  /** Base branch for the new branch */
+  base?: string;
+  /** Skip editor launch (default: true for non-interactive) */
+  noEditor?: boolean;
+}
+
+/**
+ * Create a worktree non-interactively.
+ * Requires either `branch` + `path` or `newBranch` + `base` + `path`.
+ */
+export async function createWorktreeNonInteractive(options: CreateWorktreeOptions): Promise<void> {
+  if (!(await isGitRepo())) {
+    throw new NotInGitRepoError();
+  }
+
+  const repoRoot = await getRepoRoot();
+
+  let targetBranch: string;
+  let newBranch: string | undefined;
+
+  if (options.newBranch) {
+    if (!options.base) {
+      throw new Error('--base is required when using --new-branch');
+    }
+    targetBranch = options.base;
+    newBranch = options.newBranch;
+  } else if (options.branch) {
+    targetBranch = options.branch;
+  } else {
+    throw new Error('Either --branch or --new-branch is required');
+  }
+
+  // Compute path from repo name + branch if not provided
+  const branchForPath = newBranch || targetBranch;
+  const worktreePath = options.path || (await generateDefaultPath(branchForPath));
+
+  if (await exists(worktreePath)) {
+    throw new Error(`Path already exists: ${worktreePath}`);
+  }
+
+  // Create worktree
+  await addWorktree(worktreePath, targetBranch, newBranch);
+
+  // Copy configured files
+  const config = await loadConfig();
+  if (config && config.filesToCopy.length > 0) {
+    await copyFiles(repoRoot, worktreePath, config.filesToCopy);
+  }
+
+  // Launch editor unless --no-editor
+  if (!options.noEditor && config && config.editor.type !== 'none') {
+    await launchEditor(config.editor, worktreePath);
+  }
 }
 
 /**
