@@ -16,7 +16,7 @@ A CLI tool to manage git worktrees with ease. Configure which files to copy and 
 - 🧹 **Clean orphaned directories** - Find and remove leftover worktree directories
 - 💡 **Editor integration** - Optionally launch any editor (VS Code, Vim, JetBrains IDEs, etc.)
 - 📁 **Configurable file copying** - Choose which files/directories to copy to new worktrees
-- 🔄 **Automatic update checking** - Get notified when new versions are available (once per day)
+- 🔄 **Update checking** - Get notified when new versions are available (once per day), or check on demand with `gwt upgrade`
 - ⚙️ **Per-repository configuration** - Settings saved in `.gwt/config` and respected across worktrees
 
 ## Installation
@@ -52,6 +52,7 @@ Commands:
   open                      - Open a worktree in your configured editor   
   clean                     - Remove orphaned worktree directories        
   config                    - View or update configuration
+  upgrade                   - Check for a new version and print upgrade instructions
 ```
 
 ### List Worktrees
@@ -129,6 +130,16 @@ gwt clean --all
 ```
 
 Scans for and removes orphaned worktree directories (directories that look like worktrees but are no longer tracked by git). Useful for cleaning up after manual deletions or failed operations.
+
+### Check for Updates
+
+```bash
+gwt upgrade
+```
+
+Checks whether a newer version is available. Prints the install command if an update exists, or a short confirmation that you are already on the latest version.
+
+Updates are also checked automatically in the background once per day when running any other command. That background check is silent unless an update is found.
 
 ### Configure
 
