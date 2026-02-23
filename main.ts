@@ -23,6 +23,7 @@ import { deleteCommand } from './src/commands/delete.ts';
 import { configCommand } from './src/commands/config.ts';
 import { openCommand } from './src/commands/open.ts';
 import { cleanCommand } from './src/commands/clean.ts';
+import { upgradeCommand } from './src/commands/upgrade.ts';
 import { getConfigPath, loadConfig } from './src/config/manager.ts';
 import {
   checkForUpdates,
@@ -168,6 +169,16 @@ const program = new Command()
       await touchConfigFile();
     }
   })
-  .command('config', configCommand);
+  .command('config', configCommand)
+  .command('upgrade', 'Check for a new version and print upgrade instructions')
+  .action(async () => {
+    try {
+      await upgradeCommand();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${message}`);
+      Deno.exit(1);
+    }
+  });
 
 await program.parse(Deno.args);
