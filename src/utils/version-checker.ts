@@ -125,30 +125,19 @@ export function displayUpdateNotification(updateInfo: UpdateInfo): void {
     return;
   }
 
+  const current = updateInfo.currentVersion;
+  const latest = updateInfo.latestVersion;
+  const versionLine = `  Update available: ${current} → ${latest}`;
+  const versionPad = ' '.repeat(Math.max(0, 85 - versionLine.length));
   console.log('');
-  console.log('\x1b[33m┌────────────────────────────────────────────────────────────┐\x1b[0m');
-  console.log(
-    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
-  );
-  console.log(
-    `\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${updateInfo.currentVersion} → ${updateInfo.latestVersion}                      \x1b[33m│\x1b[0m`,
-  );
-  console.log(
-    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
-  );
-  console.log(
-    '\x1b[33m│\x1b[0m  To update, run:                                          \x1b[33m│\x1b[0m',
-  );
-  console.log(
-    '\x1b[33m│\x1b[0m    \x1b[36mcurl -fsSL https://raw.githubusercontent.com/\x1b[0m      \x1b[33m│\x1b[0m',
-  );
-  console.log(
-    '\x1b[33m│\x1b[0m    \x1b[36mggalmazor/gwt/main/install.sh | bash\x1b[0m               \x1b[33m│\x1b[0m',
-  );
-  console.log(
-    '\x1b[33m│\x1b[0m                                                            \x1b[33m│\x1b[0m',
-  );
-  console.log('\x1b[33m└────────────────────────────────────────────────────────────┘\x1b[0m');
+  console.log('\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m');
+  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  console.log(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`);
+  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  console.log('\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m');
+  console.log('\x1b[33m│\x1b[0m    \x1b[36mcurl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash\x1b[0m\x1b[33m│\x1b[0m');
+  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  console.log('\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m');
   console.log('');
 }
 
