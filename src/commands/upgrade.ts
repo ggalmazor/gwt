@@ -16,17 +16,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { compareVersions, displayUpdateNotification, fetchLatestVersion } from '../utils/version-checker.ts';
+import {
+  compareVersions,
+  displayUpdateNotification,
+  fetchLatestVersion,
+} from '../utils/version-checker.ts';
 import { VERSION } from '../version.ts';
 
 /**
  * Core upgrade check logic, injectable for testing.
  */
-export async function upgradeCommandWithVersions(
+export function upgradeCommandWithVersions(
   currentVersion: string,
   latestVersion: string,
   print: (line: string) => void = console.log,
-): Promise<void> {
+): void {
   const comparison = compareVersions(currentVersion, latestVersion);
 
   if (comparison === 1) {
@@ -47,5 +51,5 @@ export async function upgradeCommand(): Promise<void> {
     Deno.exit(1);
   }
 
-  await upgradeCommandWithVersions(VERSION, latestVersion);
+  upgradeCommandWithVersions(VERSION, latestVersion);
 }

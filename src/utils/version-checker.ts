@@ -135,14 +135,28 @@ export function displayUpdateNotification(
   const versionLine = `  Update available: ${current} → ${latest}`;
   const versionPad = ' '.repeat(Math.max(0, 85 - versionLine.length));
   print('');
-  print('\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m');
-  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  print(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`);
-  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  print('\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m');
+  print(
+    '\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m',
+  );
+  print(
+    '\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m',
+  );
+  print(
+    `\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`,
+  );
+  print(
+    '\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m',
+  );
+  print(
+    '\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m',
+  );
   print(`\x1b[33m│\x1b[0m    \x1b[36m${INSTALL_CMD}\x1b[0m\x1b[33m│\x1b[0m`);
-  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  print('\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m');
+  print(
+    '\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m',
+  );
+  print(
+    '\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m',
+  );
   print('');
 }
 

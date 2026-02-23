@@ -27,7 +27,10 @@ Deno.test('upgradeCommand prints update available when newer version exists', as
 
   const output = lines.join('\n');
   assertStringIncludes(output, '2.0.0');
-  assertStringIncludes(output, 'curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash');
+  assertStringIncludes(
+    output,
+    'curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash',
+  );
 });
 
 Deno.test('upgradeCommand prints up to date when on latest version', async () => {
