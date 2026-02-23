@@ -21,6 +21,8 @@ import type { Config } from '../config/types.ts';
 
 const GITHUB_API_URL = 'https://api.github.com/repos/ggalmazor/gwt/releases/latest';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+export const INSTALL_CMD =
+  'curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -120,7 +122,10 @@ export async function checkForUpdates(currentVersion: string): Promise<UpdateInf
 /**
  * Display update notification if an update is available.
  */
-export function displayUpdateNotification(updateInfo: UpdateInfo): void {
+export function displayUpdateNotification(
+  updateInfo: UpdateInfo,
+  print: (line: string) => void = console.log,
+): void {
   if (!updateInfo.updateAvailable) {
     return;
   }
@@ -129,16 +134,16 @@ export function displayUpdateNotification(updateInfo: UpdateInfo): void {
   const latest = updateInfo.latestVersion;
   const versionLine = `  Update available: ${current} → ${latest}`;
   const versionPad = ' '.repeat(Math.max(0, 85 - versionLine.length));
-  console.log('');
-  console.log('\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  console.log(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`);
-  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m    \x1b[36mcurl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash\x1b[0m\x1b[33m│\x1b[0m');
-  console.log('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-  console.log('\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m');
-  console.log('');
+  print('');
+  print('\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m');
+  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  print(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`);
+  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  print('\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m');
+  print(`\x1b[33m│\x1b[0m    \x1b[36m${INSTALL_CMD}\x1b[0m\x1b[33m│\x1b[0m`);
+  print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
+  print('\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m');
+  print('');
 }
 
 /**

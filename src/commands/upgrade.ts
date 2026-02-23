@@ -16,11 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { compareVersions, fetchLatestVersion } from '../utils/version-checker.ts';
+import { compareVersions, displayUpdateNotification, fetchLatestVersion } from '../utils/version-checker.ts';
 import { VERSION } from '../version.ts';
-
-const INSTALL_CMD =
-  'curl -fsSL https://raw.githubusercontent.com/ggalmazor/gwt/main/install.sh | bash';
 
 /**
  * Core upgrade check logic, injectable for testing.
@@ -33,20 +30,7 @@ export async function upgradeCommandWithVersions(
   const comparison = compareVersions(currentVersion, latestVersion);
 
   if (comparison === 1) {
-    const current = currentVersion;
-    const latest = latestVersion;
-    const versionLine = `  Update available: ${current} → ${latest}`;
-    const versionPad = ' '.repeat(Math.max(0, 85 - versionLine.length));
-    print('');
-    print('\x1b[33m┌─────────────────────────────────────────────────────────────────────────────────────┐\x1b[0m');
-    print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-    print(`\x1b[33m│\x1b[0m  \x1b[1mUpdate available:\x1b[0m ${current} → ${latest}${versionPad}\x1b[33m│\x1b[0m`);
-    print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-    print('\x1b[33m│\x1b[0m  To update, run:                                                                    \x1b[33m│\x1b[0m');
-    print(`\x1b[33m│\x1b[0m    \x1b[36m${INSTALL_CMD}\x1b[0m\x1b[33m│\x1b[0m`);
-    print('\x1b[33m│\x1b[0m                                                                                     \x1b[33m│\x1b[0m');
-    print('\x1b[33m└─────────────────────────────────────────────────────────────────────────────────────┘\x1b[0m');
-    print('');
+    displayUpdateNotification({ currentVersion, latestVersion, updateAvailable: true }, print);
   } else {
     print(`gwt ${currentVersion} is up to date`);
   }
