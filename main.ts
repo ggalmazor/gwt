@@ -77,6 +77,22 @@ async function touchConfigFile(): Promise<void> {
   }
 }
 
+/**
+ * Run a command with update check before and config file touch after.
+ */
+async function runCommand(fn: () => Promise<void>): Promise<void> {
+  await checkForUpdatesIfNeeded();
+  try {
+    await fn();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Error: ${message}`);
+    Deno.exit(1);
+  } finally {
+    await touchConfigFile();
+  }
+}
+
 const program = new Command()
   .name('gwt')
   .version(VERSION)
@@ -86,18 +102,7 @@ const program = new Command()
   })
   .command('list', 'List all worktrees')
   .alias('ls')
-  .action(async () => {
-    await checkForUpdatesIfNeeded();
-    try {
-      await listCommand();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
-      Deno.exit(1);
-    } finally {
-      await touchConfigFile();
-    }
-  })
+  .action(() => runCommand(listCommand))
   .command('create', 'Create a new worktree')
   .alias('add')
   .option('--branch <branch:string>', 'Existing branch to check out')
@@ -105,70 +110,29 @@ const program = new Command()
   .option('--base <base:string>', 'Base branch for the new branch')
   .option('--path <path:string>', 'Worktree path')
   .option('--no-editor', 'Skip editor launch')
-  .action(async (options) => {
-    await checkForUpdatesIfNeeded();
-    try {
+  .action((options) =>
+    runCommand(() => {
       if (options.path && (options.branch || options.newBranch)) {
-        await createWorktreeNonInteractive({
+        return createWorktreeNonInteractive({
           branch: options.branch,
           path: options.path,
           newBranch: options.newBranch,
           base: options.base,
           noEditor: options.editor === false,
         });
-      } else {
-        await createCommand();
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
-      Deno.exit(1);
-    } finally {
-      await touchConfigFile();
-    }
-  })
+      return createCommand();
+    })
+  )
   .command('delete [target:string]', 'Delete one or more worktrees (multi-select if no target)')
   .alias('remove')
   .option('--force', 'Skip confirmation prompt')
-  .action(async (options, target?: string) => {
-    await checkForUpdatesIfNeeded();
-    try {
-      await deleteCommand(target, { force: options.force });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
-      Deno.exit(1);
-    } finally {
-      await touchConfigFile();
-    }
-  })
+  .action((options, target?: string) => runCommand(() => deleteCommand(target, { force: options.force })))
   .command('open [target:string]', 'Open a worktree in your configured editor')
-  .action(async (_options, target?: string) => {
-    await checkForUpdatesIfNeeded();
-    try {
-      await openCommand(target);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
-      Deno.exit(1);
-    } finally {
-      await touchConfigFile();
-    }
-  })
+  .action((_options, target?: string) => runCommand(() => openCommand(target)))
   .command('clean', 'Remove orphaned worktree directories')
   .option('--all', 'Clean all orphaned directories without prompting')
-  .action(async (options) => {
-    await checkForUpdatesIfNeeded();
-    try {
-      await cleanCommand({ all: options.all });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`Error: ${message}`);
-      Deno.exit(1);
-    } finally {
-      await touchConfigFile();
-    }
-  })
+  .action((options) => runCommand(() => cleanCommand({ all: options.all })))
   .command('config', configCommand)
   .command('upgrade', 'Check for a new version and print upgrade instructions')
   .action(async () => {
