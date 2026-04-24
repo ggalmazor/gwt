@@ -84,7 +84,12 @@ gwt create --new-branch my-feature --base main
 
 # Skip editor launch
 gwt create --branch feature-branch --no-editor
+
+# Open the editor without prompting
+gwt create --branch feature-branch --open-editor
 ```
+
+When an editor is configured, `gwt create` prompts before launching it. Use `--no-editor` to skip or `--open-editor` to launch without prompting.
 
 ### Delete a Worktree
 
@@ -115,9 +120,15 @@ gwt open
 # Open by branch name or path
 gwt open feature-branch
 gwt open /path/to/worktree
+
+# Skip editor launch (just print the cd command)
+gwt open feature-branch --no-editor
+
+# Launch editor without prompting
+gwt open feature-branch --open-editor
 ```
 
-Interactively select an existing worktree to open in your configured editor, or pass a target directly. If no editor is configured, displays a `cd` command to navigate to the worktree.
+Interactively select an existing worktree to open in your configured editor, or pass a target directly. When an editor is configured, `gwt open` prompts before launching it — use `--no-editor` to skip or `--open-editor` to launch without prompting. If no editor is configured, displays a `cd` command to navigate to the worktree.
 
 ### Clean Orphaned Directories
 
