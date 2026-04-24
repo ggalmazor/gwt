@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-04-24
+
 ### Added
 
 - `gwt upgrade` command to explicitly check for a newer version and print the install command when one is available
+- Confirmation prompt before launching the editor on `gwt create` and `gwt open` when an editor is configured
+- `--open-editor` flag on `gwt create` and `gwt open` to launch the editor without prompting
+- `--no-editor` flag on `gwt open` to skip editor launch
 
 ### Fixed
 
