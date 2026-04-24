@@ -169,6 +169,56 @@ Deno.test('openCommand with target opens worktree by path', async () => {
   }
 });
 
+Deno.test('openCommandNonInteractive noEditor option skips launching configured editor', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    // Editor command would fail if launched (not available on PATH)
+    await saveConfig({
+      editor: { type: 'custom', command: 'gwt-nonexistent-editor-xyz' },
+      filesToCopy: [],
+    });
+
+    // Should not throw since editor launch is skipped
+    await openCommandNonInteractive(wtPath, { noEditor: true });
+
+    assertEquals(true, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('openCommandNonInteractive openEditor option launches editor without prompt', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    const wtPath = await Deno.makeTempDir({ prefix: 'gwt-wt-' });
+    await addWorktree(wtPath, 'main', 'feature');
+
+    await saveConfig({
+      editor: { type: 'custom', command: 'echo' },
+      filesToCopy: [],
+    });
+
+    await openCommandNonInteractive(wtPath, { openEditor: true });
+
+    assertEquals(true, true);
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
 Deno.test('openCommand with invalid target throws error', async () => {
   const repo = await createTempGitRepo();
   const originalCwd = Deno.cwd();

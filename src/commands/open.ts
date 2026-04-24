@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Select } from '@cliffy/prompt';
+import { Confirm, Select } from '@cliffy/prompt';
 import { exists } from '@std/fs';
 import { isGitRepo } from '../git/repo.ts';
 import { listWorktrees } from '../git/worktree.ts';
@@ -25,11 +25,21 @@ import { launchEditor } from '../editor/launcher.ts';
 import { runConfigWizard } from '../config/wizard.ts';
 import { NotInGitRepoError } from '../utils/errors.ts';
 
+export interface OpenCommandOptions {
+  /** Skip editor launch. */
+  noEditor?: boolean;
+  /** Launch editor without prompting (only in interactive flow). */
+  openEditor?: boolean;
+}
+
 /**
  * Non-interactive version for testing.
  * Opens a worktree by launching the configured editor or outputting a cd command.
  */
-export async function openCommandNonInteractive(worktreePath: string): Promise<void> {
+export async function openCommandNonInteractive(
+  worktreePath: string,
+  opts: OpenCommandOptions = {},
+): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
@@ -64,7 +74,7 @@ export async function openCommandNonInteractive(worktreePath: string): Promise<v
   }
 
   // Launch editor or output cd command
-  if (config.editor.type !== 'none') {
+  if (config.editor.type !== 'none' && !opts.noEditor) {
     const editorName = config.editor.command || 'editor';
     console.log(`Launching ${editorName}...`);
     await launchEditor(config.editor, worktreePath);
@@ -76,13 +86,46 @@ export async function openCommandNonInteractive(worktreePath: string): Promise<v
 }
 
 /**
+ * Prompt the user whether to open the editor, honoring the flags.
+ * Returns the resolved `noEditor` value.
+ */
+async function resolveEditorPrompt(
+  editorCommand: string | undefined,
+  opts: OpenCommandOptions,
+): Promise<boolean> {
+  if (opts.noEditor) return true;
+  if (opts.openEditor) return false;
+  // No TTY -> keep legacy behavior: launch without prompting
+  if (!Deno.stdin.isTerminal()) return false;
+  const editorName = editorCommand || 'editor';
+  const confirmed = await Confirm.prompt({
+    message: `Open ${editorName}?`,
+    default: true,
+  });
+  return !confirmed;
+}
+
+/**
  * Interactive command to open a worktree.
  */
-export async function openCommand(target?: string): Promise<void> {
+export async function openCommand(
+  target?: string,
+  opts: OpenCommandOptions = {},
+): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
   }
+
+  const config = await loadConfig();
+  const editorCommand = config?.editor.command;
+  const editorConfigured = config?.editor.type !== undefined && config.editor.type !== 'none';
+
+  const promptAndResolve = async () => {
+    if (!editorConfigured) return opts;
+    const noEditor = await resolveEditorPrompt(editorCommand, opts);
+    return { ...opts, noEditor };
+  };
 
   if (target) {
     // Non-interactive: resolve target by path or branch name
@@ -101,7 +144,8 @@ export async function openCommand(target?: string): Promise<void> {
 
     const worktree = worktrees.find((wt) => wt.path === resolvedTarget || wt.branch === target);
     if (worktree) {
-      await openCommandNonInteractive(worktree.path);
+      const resolved = await promptAndResolve();
+      await openCommandNonInteractive(worktree.path, resolved);
       return;
     }
 
@@ -127,5 +171,6 @@ export async function openCommand(target?: string): Promise<void> {
     search: true,
   });
 
-  await openCommandNonInteractive(selectedPath);
+  const resolved = await promptAndResolve();
+  await openCommandNonInteractive(selectedPath, resolved);
 }
