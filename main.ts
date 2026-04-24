@@ -110,18 +110,22 @@ const program = new Command()
   .option('--base <base:string>', 'Base branch for the new branch')
   .option('--path <path:string>', 'Worktree path')
   .option('--no-editor', 'Skip editor launch')
+  .option('--open-editor', 'Open the editor without prompting', { conflicts: ['no-editor'] })
   .action((options) =>
     runCommand(() => {
+      const noEditor = options.editor === false;
+      const openEditor = options.openEditor === true;
       if (options.path && (options.branch || options.newBranch)) {
         return createWorktreeNonInteractive({
           branch: options.branch,
           path: options.path,
           newBranch: options.newBranch,
           base: options.base,
-          noEditor: options.editor === false,
+          noEditor,
+          openEditor,
         });
       }
-      return createCommand();
+      return createCommand({ noEditor, openEditor });
     })
   )
   .command('delete [target:string]', 'Delete one or more worktrees (multi-select if no target)')
@@ -131,7 +135,16 @@ const program = new Command()
     runCommand(() => deleteCommand(target, { force: options.force }))
   )
   .command('open [target:string]', 'Open a worktree in your configured editor')
-  .action((_options, target?: string) => runCommand(() => openCommand(target)))
+  .option('--no-editor', 'Skip editor launch')
+  .option('--open-editor', 'Open the editor without prompting', { conflicts: ['no-editor'] })
+  .action((options, target?: string) =>
+    runCommand(() =>
+      openCommand(target, {
+        noEditor: options.editor === false,
+        openEditor: options.openEditor === true,
+      })
+    )
+  )
   .command('clean', 'Remove orphaned worktree directories')
   .option('--all', 'Clean all orphaned directories without prompting')
   .action((options) => runCommand(() => cleanCommand({ all: options.all })))
