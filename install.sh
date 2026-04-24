@@ -34,7 +34,7 @@ esac
 VERSION="${1:-latest}"
 if [ "$VERSION" = "latest" ]; then
   echo -e "${BLUE}📡 Fetching latest version...${NC}"
-  VERSION=$(curl -fsSL https://api.github.com/repos/ggalmazor/gwt/releases/latest | grep '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/')
+  VERSION=$(curl -fsSL https://api.github.com/repos/ggalmazor/gwt/releases/latest | grep -oE '"tag_name"[[:space:]]*:[[:space:]]*"[^"]+"' | head -1 | sed -E 's/.*"v?([^"]+)"$/\1/')
   if [ -z "$VERSION" ]; then
     echo -e "${RED}❌ Failed to fetch latest version${NC}"
     exit 1
