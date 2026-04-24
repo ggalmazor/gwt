@@ -16,8 +16,46 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Confirm } from '@cliffy/prompt';
 import type { EditorConfig } from '../config/types.ts';
 import { isEditorAvailable } from './detector.ts';
+
+export interface EditorLaunchOptions {
+  /** Skip editor launch entirely. */
+  noEditor?: boolean;
+  /** Launch editor without prompting. Only meaningful when interactive is true. */
+  openEditor?: boolean;
+  /** Prompt the user when neither noEditor nor openEditor is set. */
+  interactive?: boolean;
+}
+
+/**
+ * Launch the editor, honoring opts. Returns true if the editor was launched.
+ *
+ * - `noEditor`: always skips launch.
+ * - Interactive + no `openEditor`: prompts the user.
+ * - Otherwise: launches.
+ */
+export async function maybeLaunchEditor(
+  config: EditorConfig,
+  path: string,
+  opts: EditorLaunchOptions = {},
+): Promise<boolean> {
+  if (config.type === 'none') return false;
+  if (opts.noEditor) return false;
+
+  if (opts.interactive && !opts.openEditor && Deno.stdin.isTerminal()) {
+    const editorName = config.command || 'editor';
+    const confirmed = await Confirm.prompt({
+      message: `Open ${editorName}?`,
+      default: true,
+    });
+    if (!confirmed) return false;
+  }
+
+  await launchEditor(config, path);
+  return true;
+}
 
 /**
  * Launches an editor based on the configuration.
