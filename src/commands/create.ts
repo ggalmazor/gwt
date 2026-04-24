@@ -24,7 +24,7 @@ import { listBranches } from '../git/branch.ts';
 import { addWorktree } from '../git/worktree.ts';
 import { loadConfig } from '../config/manager.ts';
 import { copyFiles } from '../copy/files.ts';
-import { launchEditor } from '../editor/launcher.ts';
+import { maybeLaunchEditor } from '../editor/launcher.ts';
 import { runConfigWizard } from '../config/wizard.ts';
 import { NotInGitRepoError } from '../utils/errors.ts';
 
@@ -50,6 +50,8 @@ export interface CreateWorktreeOptions {
   base?: string;
   /** Skip editor launch (default: true for non-interactive) */
   noEditor?: boolean;
+  /** Launch editor without prompting (only applies in interactive flow) */
+  openEditor?: boolean;
 }
 
 /**
@@ -95,10 +97,19 @@ export async function createWorktreeNonInteractive(options: CreateWorktreeOption
     await copyFiles(repoRoot, worktreePath, config.filesToCopy);
   }
 
-  // Launch editor unless --no-editor
-  if (!options.noEditor && config && config.editor.type !== 'none') {
-    await launchEditor(config.editor, worktreePath);
+  // Launch editor unless --no-editor (prompt when TTY, unless --open-editor)
+  if (config && config.editor.type !== 'none') {
+    await maybeLaunchEditor(config.editor, worktreePath, {
+      noEditor: options.noEditor,
+      openEditor: options.openEditor,
+      interactive: true,
+    });
   }
+}
+
+export interface CreateCommandOptions {
+  noEditor?: boolean;
+  openEditor?: boolean;
 }
 
 /**
@@ -111,7 +122,7 @@ async function generateDefaultPath(branch: string): Promise<string> {
   return join(repoRoot, '..', `${repoName}-${sanitizedBranch}`);
 }
 
-export async function createCommand(): Promise<void> {
+export async function createCommand(opts: CreateCommandOptions = {}): Promise<void> {
   // Check if in git repository
   if (!(await isGitRepo())) {
     throw new NotInGitRepoError();
@@ -238,12 +249,17 @@ export async function createCommand(): Promise<void> {
     console.log(`✓ Copied ${config.filesToCopy.length} file(s)/directory(ies)`);
   }
 
-  // Launch editor
+  // Launch editor (prompt unless flag bypasses)
   if (config.editor.type !== 'none') {
     const editorName = config.editor.command || 'editor';
-    console.log(`Launching ${editorName}...`);
-    await launchEditor(config.editor, worktreePath);
-    console.log('✓ Editor launched');
+    const launched = await maybeLaunchEditor(config.editor, worktreePath, {
+      noEditor: opts.noEditor,
+      openEditor: opts.openEditor,
+      interactive: true,
+    });
+    if (launched) {
+      console.log(`✓ ${editorName} launched`);
+    }
   }
 
   console.log('');

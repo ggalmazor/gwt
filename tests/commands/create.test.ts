@@ -238,6 +238,69 @@ Deno.test('createWorktreeNonInteractive throws NotInGitRepoError outside git rep
   }
 });
 
+Deno.test('createWorktreeNonInteractive openEditor launches configured editor without prompt', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    await repo.createBranch('feature');
+
+    await saveConfig({
+      editor: { type: 'custom', command: 'echo' },
+      filesToCopy: [],
+    });
+
+    const wtPath = join(repo.path, '..', 'test-wt-open-editor');
+
+    await createWorktreeNonInteractive({
+      branch: 'feature',
+      path: wtPath,
+      openEditor: true,
+    });
+
+    assert(await exists(wtPath));
+
+    await Deno.remove(wtPath, { recursive: true });
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
+Deno.test('createWorktreeNonInteractive noEditor skips editor even when configured', async () => {
+  const repo = await createTempGitRepo();
+  const originalCwd = Deno.cwd();
+
+  try {
+    Deno.chdir(repo.path);
+
+    await repo.createBranch('feature');
+
+    // Editor command would fail if launched (not on PATH)
+    await saveConfig({
+      editor: { type: 'custom', command: 'gwt-nonexistent-editor-xyz' },
+      filesToCopy: [],
+    });
+
+    const wtPath = join(repo.path, '..', 'test-wt-no-editor');
+
+    await createWorktreeNonInteractive({
+      branch: 'feature',
+      path: wtPath,
+      noEditor: true,
+    });
+
+    assert(await exists(wtPath));
+
+    await Deno.remove(wtPath, { recursive: true });
+  } finally {
+    Deno.chdir(originalCwd);
+    await repo.cleanup();
+  }
+});
+
 Deno.test('createWorktreeNonInteractive copies configured files', async () => {
   const repo = await createTempGitRepo();
   const originalCwd = Deno.cwd();
